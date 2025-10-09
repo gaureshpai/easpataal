@@ -12,12 +12,15 @@ import {
 import { Input } from "@/component/ui/input";
 import { verifyUser } from "@/lib/serverFunctions";
 
+import { useToast } from "@/hooks/use-toast";
+
 export default function UserVerification() {
   const params = useParams();
   const userId = params.id as string;
   const router = useRouter();
+  const { toast } = useToast();
   const [phone, setPhone] = useState("");
-  const [userExists, setUserExists] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -33,56 +36,74 @@ export default function UserVerification() {
       router.push("/");
       return;
     }
-  }, []);
+  }, [router, userId]);
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await verifyUser({ userId, phone });
+      if (res) {
+        if (localStorage.getItem("userId") === null) {
+          const FirstUserId = [userId];
+          localStorage.setItem("userId", JSON.stringify(FirstUserId));
+        } else {
+          const userIds = JSON.parse(localStorage.getItem("userId") || "[]");
+          userIds.push(userId);
+          localStorage.setItem("userId", JSON.stringify(userIds));
+        }
+        const check = () => {
+          if (!("serviceWorker" in navigator)) {
+            throw new Error("No Service Worker support!");
+          }
+          if (!("PushManager" in window)) {
+            throw new Error("No Push API Support!");
+          }
+        };
+        const registerServiceWorker = async () => {
+          const swRegistration = await navigator.serviceWorker.register(
+            "/service.js"
+          );
+          navigator.serviceWorker.ready.then((registration) => {
+            const userId = localStorage.getItem("userId");
+            registration.active?.postMessage({ type: "SET_USER_ID", userId });
+          });
+          return swRegistration;
+        };
+        const requestNotificationPermission = async () => {
+          const permission = await window.Notification.requestPermission();
+          if (permission !== "granted") {
+            throw new Error("Permission not granted for Notification");
+          }
+        };
+        const main = async () => {
+          check();
+          await requestNotificationPermission();
+          await registerServiceWorker();
+        };
 
-    const res = await verifyUser({ userId, phone });
-    if (res) {
-      if (localStorage.getItem("userId") === null) {
-        const FirstUserId = [userId];
-        localStorage.setItem("userId", JSON.stringify(FirstUserId));
-      } else {
-        const userIds = JSON.parse(localStorage.getItem("userId") || "[]");
-        userIds.push(userId);
-        localStorage.setItem("userId", JSON.stringify(userIds));
-      }
-      const check = () => {
-        if (!("serviceWorker" in navigator)) {
-          throw new Error("No Service Worker support!");
-        }
-        if (!("PushManager" in window)) {
-          throw new Error("No Push API Support!");
-        }
-      };
-      const registerServiceWorker = async () => {
-        const swRegistration = await navigator.serviceWorker.register(
-          "/service.js"
-        );
-        navigator.serviceWorker.ready.then((registration) => {
-          const userId = localStorage.getItem("userId");
-          registration.active?.postMessage({ type: "SET_USER_ID", userId });
+        main();
+        toast({
+          title: "Success",
+          description: "User verified successfully.",
         });
-        return swRegistration;
-      };
-      const requestNotificationPermission = async () => {
-        const permission = await window.Notification.requestPermission();
-        if (permission !== "granted") {
-          throw new Error("Permission not granted for Notification");
-        }
-      };
-      const main = async () => {
-        check();
-        await requestNotificationPermission();
-        await registerServiceWorker();
-      };
-
-      main();
-      router.push("/");
-      return;
+        router.push("/");
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "User does not exist or phone number is incorrect.",
+        variant: "destructive",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
-    setUserExists(false);
   };
 
   return (
@@ -131,13 +152,8 @@ export default function UserVerification() {
                 placeholder="Enter your phone number"
               />
             </div>
-            {!userExists && (
-              <p className="text-sm text-red-600">
-                User does not exist or phone number is incorrect.
-              </p>
-            )}
-            <Button type="submit" className="w-full">
-              Verify
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Verifying..." : "Verify"}
             </Button>
           </form>
         </CardContent>

@@ -14,6 +14,7 @@ import {
   Heart,
   Building,
   AudioWaveformIcon,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,9 +58,9 @@ export function Navbar() {
           icon: <User className="h-4 w-4 mr-2" />,
         },
         {
-          name: "Overview",
-          href: "/admin/overview",
-          icon: <AudioWaveformIcon className="h-4 w-4 mr-2" />,
+          name: "Feedback",
+          href: "/admin/feedbacks",
+          icon: <MessageSquare className="h-4 w-4 mr-2" />,
         },
       ],
       doctor: [

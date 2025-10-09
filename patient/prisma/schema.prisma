@@ -198,6 +198,23 @@ model NotificationSubscription {
   patient Patient @relation(fields: [patientId], references: [id])
 }
 
+model Feedback {
+  id        String    @id @default(cuid())
+  feedback  String
+  rating    Int?
+  category  FeedbackCategory
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("feedbacks")
+}
+
+enum FeedbackCategory {
+  COMPLAINT
+  SUGGESTION
+  APPRECIATION
+}
+
 enum Role {
   ADMIN
   DOCTOR

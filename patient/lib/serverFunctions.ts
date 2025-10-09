@@ -93,3 +93,19 @@ export async function pushFeedback({tokenid,feedback,rating}:{tokenid:string,fee
     })
     return response;
 }
+
+export async function createFeedback(data: { feedback: string; rating?: number; category: 'COMPLAINT' | 'SUGGESTION' | 'APPRECIATION' }) {
+    const feedback = await prisma.feedback.create({
+      data,
+    });
+    return feedback;
+  }
+  
+  export async function getAllFeedback() {
+    const feedbacks = await prisma.feedback.findMany({
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return feedbacks;
+  }

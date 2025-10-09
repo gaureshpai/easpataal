@@ -1,3 +1,4 @@
+import { Feedback } from "@prisma/client";
 "use server"
 
 import prisma from "@/lib/prisma"
@@ -410,4 +411,112 @@ export async function getDoctorsAction(): Promise<UserActionResponse<UserWithSta
         await prisma.$disconnect();
         return { success: false, error: "Failed to fetch doctors" };
     }
+}
+
+export async function getFeedbackAnalytics(): Promise<UserActionResponse<{
+  anonymousFeedbacks: Feedback[];
+  tokenFeedbacks: any[]; // Define a proper type for this
+  anonymousFeedbackStats: {
+    avgRating: number | null;
+    totalFeedbacks: number;
+  };
+  bestDoctor: {
+    name: string;
+    avgRating: number;
+  } | null;
+}>> {
+  try {
+    // 1. Anonymous feedback
+    const anonymousFeedbacks = await prisma.feedback.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    const anonymousFeedbackAggregation = await prisma.feedback.aggregate({
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        _all: true,
+      },
+    });
+
+    // 2. Token feedback
+    const tokenFeedbacks = await prisma.tokenQueue.findMany({
+        where: {
+            OR: [
+                { feedback: { not: null } },
+                { rating: { not: null } }
+            ]
+        },
+        include: {
+            patient: true,
+            counter: {
+                include: {
+                    assignedUser: true
+                }
+            }
+        },
+        orderBy: {
+            createdAt: "desc"
+        }
+    });
+
+    // 3. Best doctor
+    const bestDoctorAgg = await prisma.tokenQueue.groupBy({
+      by: ['counterId'],
+      where: {
+        rating: {
+          not: null,
+        },
+        counterId: {
+            not: null
+        }
+      },
+      _avg: {
+        rating: true,
+      },
+      orderBy: {
+        _avg: {
+          rating: 'desc',
+        },
+      },
+      take: 1,
+    });
+
+    let bestDoctorData = null;
+    if (bestDoctorAgg.length > 0) {
+      const bestCounterId = bestDoctorAgg[0].counterId;
+      if (bestCounterId) {
+        const counter = await prisma.counter.findUnique({
+          where: { id: bestCounterId },
+          include: { assignedUser: true },
+        });
+        if (counter && counter.assignedUser) {
+          bestDoctorData = {
+            name: counter.assignedUser.name,
+            avgRating: bestDoctorAgg[0]._avg.rating!,
+          };
+        }
+      }
+    }
+
+    await prisma.$disconnect();
+    return {
+      success: true,
+      data: {
+        anonymousFeedbacks,
+        tokenFeedbacks,
+        anonymousFeedbackStats: {
+          avgRating: anonymousFeedbackAggregation._avg.rating,
+          totalFeedbacks: anonymousFeedbackAggregation._count._all,
+        },
+        bestDoctor: bestDoctorData,
+      },
+    };
+  } catch (error) {
+    console.error("Error getting feedback analytics:", error);
+    await prisma.$disconnect();
+    return { success: false, error: "Failed to fetch feedback analytics" };
+  }
 }
