@@ -3,152 +3,29 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
-export interface DepartmentData {
-    id: string
-    name: string
-    description: string
-    location: string
-    contactNumber: string
-    email: string
-    operatingHours: string
-    status: "Active" | "Inactive" | "Maintenance"
-    capacity: number
-    currentOccupancy: number
-    specializations: string[]
-    equipment: string[]
-    createdAt: Date
-    updatedAt: Date
-}
 
-export interface DepartmentStats {
-    totalDepartments: number
-    activeDepartments: number
-    totalCapacity: number
-    currentOccupancy: number
-    occupancyRate: number
-    byStatus: Record<string, number>
-    bySpecialization: Record<string, number>
-}
-
-export interface DepartmentResponse<T> {
-    success: boolean
-    data?: T
-    error?: string
-}
-
-export async function getAllDepartmentsAction(): Promise<DepartmentResponse<DepartmentData[]>> {
+export async function createDepartmentAction(formData: FormData): Promise<DepartmentResponse<any>> {
     try {
-        const departments = await prisma.department.findMany({
-            orderBy: { name: "asc" },
-        })
+        const name = formData.get("name") as string;
 
-        const departmentData: DepartmentData[] = departments.map((dept) => ({
-            id: dept.id,
-            name: dept.name,
-            description: dept.description,
-            location: dept.location,
-            contactNumber: dept.contactNumber || "",
-            email: dept.email || "",
-            operatingHours: dept.operatingHours,
-            status: dept.status as "Active" | "Inactive" | "Maintenance",
-            capacity: dept.capacity,
-            currentOccupancy: dept.currentOccupancy,
-            specializations: dept.specializations,
-            equipment: dept.equipment,
-            createdAt: dept.createdAt,
-            updatedAt: dept.updatedAt,
-        }))
-
-        return { success: true, data: departmentData }
-    } catch (error) {
-        console.error("Error fetching departments:", error)
-        return { success: false, error: "Failed to fetch departments" }
-    } finally {
-        await prisma.$disconnect()
-    }
-}
-
-export async function getDepartmentByIdAction(id: string): Promise<DepartmentResponse<DepartmentData>> {
-    try {
-        const result = await getAllDepartmentsAction()
-        if (!result.success || !result.data) {
-            return { success: false, error: "Failed to fetch departments" }
-        }
-
-        const department = result.data.find((dept) => dept.id === id)
-        if (!department) {
-            return { success: false, error: "Department not found" }
-        }
-
-        return { success: true, data: department }
-    } catch (error) {
-        console.error("Error fetching department:", error)
-        return { success: false, error: "Failed to fetch department" }
-    }
-}
-
-export async function createDepartmentAction(formData: FormData): Promise<DepartmentResponse<DepartmentData>> {
-    try {
-        const name = formData.get("name") as string
-        const description = formData.get("description") as string
-        const location = formData.get("location") as string
-        const contactNumber = formData.get("contactNumber") as string
-        const email = formData.get("email") as string
-        const operatingHours = formData.get("operatingHours") as string
-        const capacity = Number.parseInt(formData.get("capacity") as string) || 50
-        const specializations = (formData.get("specializations") as string)
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0)
-        const equipment = (formData.get("equipment") as string)
-            .split(",")
-            .map((e) => e.trim())
-            .filter((e) => e.length > 0)
-
-        if (!name || !description || !location) {
-            return { success: false, error: "Required fields are missing" }
+        if (!name) {
+            return { success: false, error: "Required fields are missing" };
         }
 
         const department = await prisma.department.create({
             data: {
                 name,
-                description,
-                location,
-                contactNumber,
-                email,
-                operatingHours,
-                capacity,
-                specializations,
-                equipment,
             },
-        })
+        });
 
-        const departmentData: DepartmentData = {
-            id: department.id,
-            name: department.name,
-            description: department.description,
-            location: department.location,
-            contactNumber: department.contactNumber || "",
-            email: department.email || "",
-            operatingHours: department.operatingHours,
-            status: department.status as "Active" | "Inactive" | "Maintenance",
-            capacity: department.capacity,
-            currentOccupancy: department.currentOccupancy,
-            specializations: department.specializations,
-            equipment: department.equipment,
-            createdAt: department.createdAt,
-            updatedAt: department.updatedAt,
-        }
+        revalidatePath("/admin/users");
 
-        revalidatePath("/admin/departments")
-        revalidatePath("/admin/users")
-
-        return { success: true, data: departmentData }
+        return { success: true, data: department };
     } catch (error) {
-        console.error("Error creating department:", error)
-        return { success: false, error: "Failed to create department" }
+        console.error("Error creating department:", error);
+        return { success: false, error: "Failed to create department" };
     } finally {
-        await prisma.$disconnect()
+        await prisma.$disconnect();
     }
 }
 

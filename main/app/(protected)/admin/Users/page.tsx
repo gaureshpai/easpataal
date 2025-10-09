@@ -217,7 +217,7 @@ const UserForm = ({
   </form>
 );
 
-const UserCRUDPage = () => {
+const UserManagementPage = () => {
   const [users, setUsers] = useState<UserWithStats[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -655,7 +655,7 @@ const UserCRUDPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.byRole?.NURSE ||
+              {stats?.byRole?.RECEPTIONIST ||
                 users.filter((u) => u.role === "RECEPTIONIST").length}
             </div>
           </CardContent>
@@ -692,139 +692,137 @@ const UserCRUDPage = () => {
           </div>
           <div className="rounded-md border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Username
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.email || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Badge className={getRoleBadgeColor(user.role)}>
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.department || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Badge className={getStatusBadgeColor(user.status)}>
-                          {user.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                            disabled={isPending}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleToggleStatus(user.id, user.status)
-                            }
-                            disabled={isPending}
-                          >
-                            {user.status === "ACTIVE" ? (
-                              <UserX className="h-4 w-4 text-orange-600" />
-                            ) : (
-                              <UserCheck className="h-4 w-4 text-green-600" />
-                            )}
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={isPending}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete User</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete {user.name}?
-                                  This action cannot be undone. If the user has
-                                  associated data, they will be deactivated
-                                  instead.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    handleDeleteUser(user.id, user.name)
-                                  }
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </td>
+              {loading ? (
+                <div className="text-center py-8 text-gray-500">
+                  <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p>Loading users...</p>
+                  <p className="text-gray-600">
+                    Please wait while we fetch the user data.
+                  </p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  {searchTerm
+                    ? "No users found matching your search."
+                    : "No users found."}
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Department
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {user.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.email || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <Badge className={getRoleBadgeColor(user.role)}>
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.department || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <Badge className={getStatusBadgeColor(user.status)}>
+                            {user.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditUser(user)}
+                              disabled={isPending}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleToggleStatus(user.id, user.status)
+                              }
+                              disabled={isPending}
+                            >
+                              {user.status === "ACTIVE" ? (
+                                <UserX className="h-4 w-4 text-orange-600" />
+                              ) : (
+                                <UserCheck className="h-4 w-4 text-green-600" />
+                              )}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={isPending}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete {user.name}?
+                                    This action cannot be undone. If the user has
+                                    associated data, they will be deactivated
+                                    instead.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() =>
+                                      handleDeleteUser(user.id, user.name)
+                                    }
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
-
-          {loading || filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p>Loading users...</p>
-              <p className="text-gray-600">
-                Please wait while we fetch the user data.
-              </p>
-            </div>
-          ) : (
-            filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                {searchTerm
-                  ? "No users found matching your search."
-                  : "No users found."}
-              </div>
-            )
-          )}
         </CardContent>
       </Card>
 
@@ -853,4 +851,4 @@ const UserCRUDPage = () => {
   );
 };
 
-export default UserCRUDPage;
+export default UserManagementPage;

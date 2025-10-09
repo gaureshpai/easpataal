@@ -8,6 +8,7 @@ export const getAllCountersAction = async () => {
     const counters = await prisma.counter.findMany({
       include: {
         assignedUser: true,
+        category: true,
       },
     });
     return { success: true, data: counters };

@@ -7,6 +7,7 @@ import { getSystemAnalyticsAction } from "@/lib/content-actions";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminPanel() {
   const [analytics, setAnalytics] = useState<any>(null);
@@ -94,31 +95,58 @@ export default function AdminPanel() {
           </Card>
         </div>
 
-        <Card>
+        <Card className="mt-4">
           <CardHeader>
             <CardTitle>Counters</CardTitle>
           </CardHeader>
           <CardContent>
-            <table className="w-full">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned User</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {analytics?.counters?.map((counter: any) => (
-                  <tr key={counter.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{counter.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.assignedUser?.name || "-"}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.category?.name || "-"}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.status}</td>
+            {loading ? (
+              <div className="rounded-md border overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned User</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {[...Array(5)].map((_, i) => (
+                        <tr key={i}>
+                          <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-32" /></td>
+                          <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-32" /></td>
+                          <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-24" /></td>
+                          <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-24" /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assigned User</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {analytics?.counters?.map((counter: any) => (
+                    <tr key={counter.id}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{counter.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.assignedUser?.name || "-"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.category?.name || "-"}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </CardContent>
         </Card>
       </main>

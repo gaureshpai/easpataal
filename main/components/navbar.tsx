@@ -57,11 +57,6 @@ export function Navbar() {
           icon: <User className="h-4 w-4 mr-2" />,
         },
         {
-          name: "Departments",
-          href: "/admin/departments",
-          icon: <Building className="h-4 w-4 mr-2" />,
-        },
-        {
           name: "Overview",
           href: "/admin/overview",
           icon: <AudioWaveformIcon className="h-4 w-4 mr-2" />,
