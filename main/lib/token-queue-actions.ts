@@ -157,6 +157,17 @@ export async function createTokenAction(
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const allCompletedTokens = await prisma.tokenQueue.findMany({
+        where: {
+            status: "COMPLETED",
+            actualWaitTime: { not: null },
+            createdAt: { gte: today }
+        }
+    });
+
+    const globalTotalWaitTime = allCompletedTokens.reduce((sum, token) => sum + token.actualWaitTime!, 0);
+    const globalAverageWaitTime = allCompletedTokens.length > 0 ? globalTotalWaitTime / allCompletedTokens.length : 15;
+
     const counters = await prisma.counter.findMany({
       where: {
         categoryId: counterCategoryId,
@@ -203,7 +214,7 @@ export async function createTokenAction(
       const averageWaitTime =
         completedTokensToday.length > 0
           ? totalActualWaitTime / completedTokensToday.length
-          : 15;
+          : globalAverageWaitTime;
 
       const waitingTimeScore = averageWaitTime * waitingTokens;
 

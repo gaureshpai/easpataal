@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/component/Navbar";
+import { Toaster } from "@/component/ui/toaster";
 
 export const metadata: Metadata = {
   title: "EASPATAAL - Patient",
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body>
         <Navbar />
         <main>{children}</main>
+        <Toaster />
       </body>
     </html>
   );
