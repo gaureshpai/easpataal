@@ -102,6 +102,7 @@ model TokenQueue {
   calledAt          DateTime?
   completedAt       DateTime?
   feedback          String?
+  rating            Int?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
