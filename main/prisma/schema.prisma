@@ -60,7 +60,6 @@ model Patient {
 model CounterCategory {
   id           String      @id @default(cuid())
   name         String      @unique
-  description  String?
   department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
   counters     Counter[]

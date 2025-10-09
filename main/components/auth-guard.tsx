@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { AuthGuardProps } from "@/lib/helpers";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function AuthGuard({
   children,
@@ -22,14 +23,20 @@ export function AuthGuard({
     }
 
     if (session && allowedRoles && !allowedRoles.includes(session.user?.role)) {
-      console.log(session.user);
-      router.push("/unauthorized");
+      router.push('/');
       return;
     }
   }, [session, status, allowedRoles, router]);
 
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Skeleton className="h-12 w-12 rounded-full" />
+      </div>
+    );
+  }
+
   if (
-    status === "loading" ||
     !session ||
     (session && allowedRoles && !allowedRoles.includes(session.user?.role))
   ) {

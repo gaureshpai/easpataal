@@ -11,6 +11,21 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "EASPATAAL",
   description: "Hospital queue management system - EASPATAAL",
+  openGraph: {
+    title: "EASPATAAL",
+    description: "Hospital queue management system - EASPATAAL",
+    url: "https://easpataal-employee.vercel.app",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "EASPATAAL Logo",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
 }
 
 export default async function RootLayout({

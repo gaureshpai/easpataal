@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
 import { getPrescriptionsAction } from "@/lib/pharmacist-actions"
 import OrdersClient from "@/components/orders-client"
+
+export const metadata: Metadata = {
+  title: "Prescription Orders - EASPATAAL",
+  description: "Manage prescription orders.",
+};
 
 export default async function OrdersPage() {
   const prescriptions = await getPrescriptionsAction()

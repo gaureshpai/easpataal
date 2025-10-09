@@ -20,7 +20,7 @@ export async function getDepartmentOptions(): Promise<string[]> {
     const { getAllDepartmentsAction } = await import("./department-actions");
     const result = await getAllDepartmentsAction();
     if (result.success && result.data && result.data.length > 0) {
-      return result.data.map((dept) => dept.name);
+      return result.data.map((dept: { name: string }) => dept.name);
     }
     return fallbackDepartments;
   } catch (error) {

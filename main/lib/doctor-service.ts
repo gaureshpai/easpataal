@@ -8,8 +8,8 @@ export interface PatientData {
     name: string
     age: number
     gender: string
-    phone?: string | null
-    address?: string | null
+    phone?: string | null;
+    address?: string | null;
     condition?: string | null
     status: string
     allergies: string[]
