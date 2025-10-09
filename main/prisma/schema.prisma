@@ -25,7 +25,6 @@ model User {
   appointments             Appointment[]
   prescriptions            Prescription[]
   counters                 Counter[]                  @relation("UserCounters")
-  NotificationSubscription NotificationSubscription[]
 
   @@map("users")
 }
@@ -50,9 +49,10 @@ model Patient {
   lastVisit        DateTime?     @db.Timestamp(6)
   nextAppointment  DateTime?     @db.Timestamp(6)
 
-  appointments  Appointment[]
-  prescriptions Prescription[]
-  tokenQueue    TokenQueue[]
+  appointments             Appointment[]
+  prescriptions            Prescription[]
+  tokenQueue               TokenQueue[]
+  NotificationSubscription NotificationSubscription?
 
   @@map("patients")
 }
@@ -114,9 +114,9 @@ model TokenQueue {
 }
 
 model Department {
-  id               String           @id @default(cuid())
-  name             String           @unique
-  status           DepartmentStatus @default(ACTIVE)
+  id                String            @id @default(cuid())
+  name              String            @unique
+  status            DepartmentStatus  @default(ACTIVE)
   counters          Counter[]
   counterCategories CounterCategory[]
 
@@ -193,10 +193,10 @@ model DrugInventory {
 
 model NotificationSubscription {
   id           String @id @default(cuid())
-  userId       String @unique
+  patientId       String @unique
   subscription Json
 
-  user User @relation(fields: [userId], references: [id])
+  patient Patient @relation(fields: [patientId], references: [id])
 }
 
 enum Role {

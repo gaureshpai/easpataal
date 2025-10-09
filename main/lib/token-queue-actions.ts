@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { generateDisplayName } from "@/lib/helpers";
+import webpush from "web-push";
 
 export interface TokenQueueData {
   id: string;
@@ -272,7 +273,33 @@ export async function createTokenAction(
       calledAt: token.calledAt,
       completedAt: token.completedAt,
     };
+    const subscription = await prisma.notificationSubscription.findUnique({
+      where: { patientId },
+    });
+    if (
+      !subscription ||
+      !subscription.subscription ||
+      !(subscription.subscription as any)?.subscription
+    ) {
+      return { success: true, data: tokenData };
+    }
 
+    const vapidKeys = {
+      publicKey:
+        "BCRoHbGjLkhm9x-nh6xqM5xCkEbFNy3iDPlazZ5n0zKkm8lXQEITRpAaciqOBwQSDiW9VtVeDhM0BusA9jmHIuI",
+      privateKey: "AOGOw-mgm-_iImOm3rM9I8I3FRoX9iFhbIfvHJy9sAM",
+    };
+
+    webpush.setVapidDetails(
+      "mailto:myuserid@email.com",
+      vapidKeys.publicKey,
+      vapidKeys.privateKey
+    );
+    console.log("Subscription found:", subscription);
+    await webpush.sendNotification(
+      (subscription.subscription as any)?.subscription,
+      "Your token is created successfully!"
+    );
     revalidatePath("/receptionist");
     revalidatePath("/display");
 
