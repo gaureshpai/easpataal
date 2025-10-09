@@ -13,19 +13,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Plus, Search, Users, RefreshCw } from "lucide-react";
+import { Plus, Search, Users, RefreshCw, LucideQrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast"
 import PatientForm from "@/components/patient-form"
 
 import { getAllPatientsAction, searchPatientsAction } from "@/lib/patient-actions";
 import { createTokenAction } from "@/lib/token-queue-actions";
 import type { Patient } from "@prisma/client";
+import QrCodeDialog from "./qr-code-dialog";
 import TokenForm from "./token-form"
 
 const ReceptionistDashboard = () => {
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [openTokenDialogs, setOpenTokenDialogs] = useState<Record<string, boolean>>({});
   const [isCreatePatientDialogOpen, setIsCreatePatientDialogOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
@@ -67,7 +69,7 @@ const ReceptionistDashboard = () => {
       (patient.phone && patient.phone.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
-  const [openTokenDialogs, setOpenTokenDialogs] = useState<Record<string, boolean>>({});
+  const [openQrCodeDialogs, setOpenQrCodeDialogs] = useState<Record<string, boolean>>({});
 
   const handleCreatePatientSuccess = () => {
     setIsCreatePatientDialogOpen(false);
@@ -142,6 +144,9 @@ const ReceptionistDashboard = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      QR Code
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -165,6 +170,19 @@ const ReceptionistDashboard = () => {
                             </DialogContent>
                           </Dialog>
                         </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="md" onClick={() => setOpenQrCodeDialogs((prev) => ({ ...prev, [patient.id]: true }))}>
+                            <LucideQrCode size={64} className="text-gray-700" />
+                          </Button>
+
+                          <QrCodeDialog
+                            open={openQrCodeDialogs[patient.id] || false}
+                            onOpenChange={(isOpen) => setOpenQrCodeDialogs((prev) => ({ ...prev, [patient.id]: isOpen }))}
+                            patientId={patient.id}
+                          />
+                          </div>
                       </td>
                     </tr>
                   ))}
