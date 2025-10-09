@@ -33,6 +33,7 @@ export interface CounterFormData {
   name: string;
   location: string;
   status: "ACTIVE" | "INACTIVE";
+  assignedUserId?: string;
 }
 
 export interface UserFormData {
