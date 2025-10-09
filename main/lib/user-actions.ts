@@ -278,7 +278,6 @@ export async function getUserStatsAction() {
             by: ["department"],
             where: {
                 status: "ACTIVE",
-                department: { not: null },
             },
             _count: {
                 department: true,

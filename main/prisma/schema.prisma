@@ -106,8 +106,8 @@ model TokenQueue {
   updatedAt DateTime @updatedAt
 
   // Relations
-  patient    Patient    @relation(fields: [patientId], references: [id])
-  counter    Counter?   @relation(fields: [counterId], references: [id])
+  patient Patient  @relation(fields: [patientId], references: [id])
+  counter Counter? @relation(fields: [counterId], references: [id])
 
   @@map("token_queue")
 }
