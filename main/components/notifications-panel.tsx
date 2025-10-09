@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Bell, AlertTriangle, Info, CheckCircle, Clock, X, Loader2, RefreshCw } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "next-auth/react";
 import { getAllAnnouncementsAction, type Announcement } from "@/lib/content-actions"
 import { getNotificationColor } from "@/lib/functions"
 import { Notification } from "@/lib/helpers"

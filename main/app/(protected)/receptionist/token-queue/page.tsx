@@ -358,7 +358,7 @@ export default function TokenQueuePage() {
 
   return (
     <AuthGuard
-      allowedRoles={["receptionist", "admin"]}
+      allowedRoles={["RECEPTIONIST", "ADMIN"]}
       className="container mx-auto p-6 space-y-6"
     >
       <Navbar />

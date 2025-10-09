@@ -248,7 +248,7 @@ export default function DisplayManagement() {
   const isDepartmentSpecific = (contentType: string) => contentType === "Department Token Queue"
 
   return (
-    <AuthGuard allowedRoles={["admin"]} className="p-6 space-y-6">
+    <AuthGuard allowedRoles={["ADMIN"]} className="p-6 space-y-6">
       <Navbar />
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>

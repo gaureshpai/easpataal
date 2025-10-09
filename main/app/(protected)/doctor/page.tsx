@@ -40,7 +40,7 @@ import {
 } from "lucide-react"
 import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
-import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast"
 import {
   getDoctorAppointmentsAction,
@@ -58,7 +58,8 @@ import { Medication, DrugOption } from "@/lib/helpers"
 
 export default function DoctorDashboard() {
   const [currentDate] = useState(new Date())
-  const { user } = useAuth()
+  const { data: session } = useSession();
+  const user = session?.user;
   const { toast } = useToast()
   const [isPending, startTransition] = useTransition()
 
@@ -81,9 +82,9 @@ export default function DoctorDashboard() {
 
   useEffect(() => {
     if (user?.name) {
-      loadDashboardData()
+      loadDashboardData();
     }
-  }, [user])
+  }, [user]);
 
   useEffect(() => {
     if (dialogOpen) {
@@ -345,7 +346,7 @@ export default function DoctorDashboard() {
   }
 
   return (
-    <AuthGuard allowedRoles={["doctor", "admin"]} className="container mx-auto p-6 space-y-6">
+    <AuthGuard allowedRoles={["DOCTOR", "ADMIN"]} className="container mx-auto p-6 space-y-6">
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 

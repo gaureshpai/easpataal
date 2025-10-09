@@ -154,7 +154,7 @@ export default function AdminOverviewPage() {
 
   return (
     <AuthGuard
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       className="container mx-auto p-6 space-y-8"
     >
       <Navbar />
