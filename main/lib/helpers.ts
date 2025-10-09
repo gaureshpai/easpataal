@@ -89,10 +89,6 @@ export interface DrugOption {
   isAvailable: boolean;
 }
 
-export interface DisplayPageProps {
-  params: Promise<{ id: string }>;
-}
-
 export interface AuthGuardProps {
   children: React.ReactNode;
   allowedRoles?: string[];
@@ -158,45 +154,6 @@ export interface PharmacyDashboardClientProps {
   statistics: PharmacyStatistics;
   topMedications: TopMedication[];
   prescriptionTrends: PrescriptionTrend[];
-}
-
-export interface PublicDisplayProps {
-  displayId: string;
-  displayData?: {
-    id: string;
-    location: string;
-    status: string;
-    content: string;
-    lastUpdate: string;
-    isActive: boolean;
-    config?: any;
-  };
-}
-
-export interface DisplayData {
-  tokenQueue: Array<{
-    token_id: string;
-    patient_name: string;
-    display_name?: string | null;
-    status: string;
-    department: string;
-    priority: number;
-    estimated_time?: string | null;
-  }>;
-  departments: Array<{
-    dept_id: string;
-    department_name: string;
-    location: string;
-    current_tokens: number;
-  }>;
-  drugInventory: Array<{
-    drug_id: string;
-    drug_name: string;
-    current_stock: number;
-    min_stock: number;
-    status: string;
-  }>;
-  contentType?: string;
 }
 
 export interface Patient {
