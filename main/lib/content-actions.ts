@@ -32,19 +32,6 @@ export interface ActionResponse<T> {
 
 export async function getSystemAnalyticsAction(): Promise<ActionResponse<AnalyticsData>> {
   try {
-    // Fetch display statistics
-    const displays = await prisma.display.findMany({
-      select: {
-        status: true,
-      },
-    })
-
-    const displayStats = {
-      total: displays.length,
-      online: displays.filter(d => d.status === 'ONLINE').length,
-      offline: displays.filter(d => d.status === 'OFFLINE').length,
-    }
-
     // Fetch patient statistics
     const patients = await prisma.patient.findMany({
       select: {
@@ -100,7 +87,7 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
     if (completedTokensWithTime.length > 0) {
       const totalWaitTime = completedTokensWithTime.reduce((sum, token) => {
         const waitTime = token.completedAt && token.createdAt
-          ? (token.completedAt.getTime() - token.createdAt.getTime()) / 60000 // Convert to minutes
+          ? (token.completedAt.getTime() - token.createdAt.getTime()) / 60000 // minutes
           : 0
         return sum + waitTime
       }, 0)
