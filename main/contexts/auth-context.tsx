@@ -1,39 +1,58 @@
-"use client"
+"use client";
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
-import { AuthContextType, User } from "@/lib/helpers"
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  type ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
+import { AuthContextType, User } from "@/lib/helpers";
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("udal_user")
-    if (storedUser) {
+    const fetchUser = async () => {
       try {
-        const userData = JSON.parse(storedUser)
-        setUser(userData)
+        const response = await fetch('/api/auth');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
       } catch (error) {
-        localStorage.removeItem("udal_user")
+        console.error("Failed to fetch user", error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false)
-  }, [])
+    };
 
-  const login = (userData: User) => {
-    setUser(userData)
-    localStorage.setItem("udal_user", JSON.stringify(userData))
-  }
+    fetchUser();
+  }, []);
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("udal_user")
-    router.push("/login")
-  }
+  const login = async (userData: User) => {
+    setUser(userData);
+    await fetch('/api/auth', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+  };
+
+  const logout = async () => {
+    setUser(null);
+    await fetch('/api/auth', {
+      method: 'DELETE',
+    });
+    router.push("/");
+  };
 
   const value = {
     user,
@@ -41,15 +60,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     isAuthenticated: !!user,
     isLoading,
-  }
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
+  return context;
 }

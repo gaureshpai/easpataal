@@ -184,7 +184,6 @@ export async function updateDepartmentAction(
                 contactNumber,
                 email,
                 operatingHours,
-                status,
                 capacity,
                 currentOccupancy,
                 specializations,
@@ -242,7 +241,7 @@ export async function getDepartmentStatsAction(): Promise<DepartmentResponse<Dep
         const departments = await prisma.department.findMany()
 
         const totalDepartments = departments.length
-        const activeDepartments = departments.filter((dept) => dept.status === "Active").length
+        const activeDepartments = departments.filter((dept) => dept.status === "ACTIVE").length
         const totalCapacity = departments.reduce((sum, dept) => sum + dept.capacity, 0)
         const currentOccupancy = departments.reduce((sum, dept) => sum + dept.currentOccupancy, 0)
         const occupancyRate = totalCapacity > 0 ? (currentOccupancy / totalCapacity) * 100 : 0

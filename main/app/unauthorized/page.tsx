@@ -3,20 +3,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { AlertTriangle } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation"
 
 export default function UnauthorizedPage() {
-  const { user, logout } = useAuth()
-  const router = useRouter()
+  const { data: session } = useSession();
+  const user = session?.user;
+  const router = useRouter();
 
   const handleGoBack = () => {
     if (user) {
-      router.push(`/${user.role}`)
+      router.push(`/${user.role}`);
     } else {
-      router.push("/login")
+      router.push("/");
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -37,12 +38,12 @@ export default function UnauthorizedPage() {
             <Button onClick={handleGoBack} className="w-full">
               Go Back to Dashboard
             </Button>
-            <Button variant="outline" onClick={logout} className="w-full">
+            <Button variant="outline" onClick={() => signOut()} className="w-full">
               Sign Out
             </Button>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

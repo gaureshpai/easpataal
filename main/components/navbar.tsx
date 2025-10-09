@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -22,14 +22,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/hooks/use-auth";
+import { useSession, signOut } from "next-auth/react";
 import type { JSX } from "react";
-import { NotificationsPanel } from "@/components/notifications-panel";
 
 export function Navbar() {
-  const { user, logout } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const getNavLinks = () => {
     const commonLinks = [
@@ -71,12 +72,7 @@ export function Navbar() {
           name: "Patients",
           href: "/doctor/patients",
           icon: <User className="h-4 w-4 mr-2" />,
-        },
-        {
-          name: "OT Status",
-          href: "/doctor/ot",
-          icon: <Heart className="h-4 w-4 mr-2" />,
-        },
+        }
       ],
       pharmacist: [
         {
@@ -152,7 +148,6 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <NotificationsPanel />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -182,7 +177,10 @@ export function Navbar() {
                     <span>Profile & Settings</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={logout}>
+                <DropdownMenuItem onClick={() => {
+                  signOut();
+                  router.push("/");
+                  }}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -235,8 +233,9 @@ export function Navbar() {
             <button
               className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 flex items-center"
               onClick={() => {
-                logout();
+                signOut();
                 setMobileMenuOpen(false);
+                router.push("/");
               }}
             >
               <LogOut className="h-4 w-4 mr-2" />

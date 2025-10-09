@@ -1,4 +1,4 @@
-name: Patient App CI
+name: CI/CD Pipeline - Patient
 
 on:
   push:
@@ -35,4 +35,10 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build:ci
+
+      - name: Upload build status
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-status-patient
+          path: patient/build-status.txt

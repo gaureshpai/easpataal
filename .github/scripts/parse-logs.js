@@ -27,28 +27,41 @@ for (const dir of dirs) {
   const dirName = path.basename(dir);
   console.log(`Processing: ${dirName}`);
 
-  const logFile = path.join(dir, "log.txt");
-  if (!fs.existsSync(logFile)) {
-    console.warn(`⚠️  Log file missing in ${dirName}`);
-    summaries.push({
-      nodeVersion: dirName.replace("test-logs-", ""),
-      status: "❌ Log missing",
-    });
-    continue;
-  }
-
-  const log = fs.readFileSync(logFile, "utf8");
+  const statusFile = path.join(dir, "build-status.txt");
   let status;
-  if (log.includes("Tests passed successfully")) {
-    status = "✅ Passed";
-  } else if (log.includes("Tests failed")) {
-    status = "❌ Failed";
+
+  if (fs.existsSync(statusFile)) {
+    const statusContent = fs.readFileSync(statusFile, "utf8").trim();
+    if (statusContent === "success") {
+      status = "✅ Passed";
+    } else if (statusContent === "failure") {
+      status = "❌ Failed";
+    } else {
+      status = "❓ Unknown";
+    }
   } else {
-    status = "❓ Unknown";
+    const logFile = path.join(dir, "log.txt");
+    if (!fs.existsSync(logFile)) {
+      console.warn(`⚠️  Log file missing in ${dirName}`);
+      summaries.push({
+        nodeVersion: dirName.replace("test-logs-", ""),
+        status: "❌ Log missing",
+      });
+      continue;
+    }
+
+    const log = fs.readFileSync(logFile, "utf8");
+    if (log.includes("Tests passed successfully")) {
+      status = "✅ Passed";
+    } else if (log.includes("Tests failed")) {
+      status = "❌ Failed";
+    } else {
+      status = "❓ Unknown";
+    }
   }
 
   summaries.push({
-    nodeVersion: dirName.replace("test-logs-", ""),
+    nodeVersion: dirName.replace("test-logs-", "").replace("build-status-", ""),
     status,
   });
 }

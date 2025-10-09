@@ -101,6 +101,7 @@ model TokenQueue {
   actualWaitTime    Int?
   calledAt          DateTime?
   completedAt       DateTime?
+  feedback          String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -187,20 +188,6 @@ model PrescriptionItem {
   @@map("prescription_items")
 }
 
-model Display {
-  id             String        @id @default(cuid())
-  location       String
-  status         DisplayStatus @default(OFFLINE)
-  content        String        @default("Token Queue")
-  lastUpdate     DateTime      @default(now())
-  config         Json?         @default("{}")
-  createdAt      DateTime      @default(now())
-  isActive       Boolean       @default(true)
-  updatedAt      DateTime      @updatedAt
-
-  @@map("displays")
-}
-
 model DrugInventory {
   id                String              @id @default(cuid())
   createdAt         DateTime            @default(now())
@@ -228,7 +215,6 @@ enum Role {
 enum AppointmentType {
   CONSULTATION
   FOLLOW_UP
-  EMERGENCY
 }
 
 enum BloodType {

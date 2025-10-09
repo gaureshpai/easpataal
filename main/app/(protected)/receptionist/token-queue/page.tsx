@@ -343,8 +343,6 @@ export default function TokenQueuePage() {
 
   const getPriorityColor = (priority: TokenQueueData["priority"]) => {
     switch (priority) {
-      case "Emergency":
-        return "bg-red-100 text-red-800 border-red-200";
       case "Urgent":
         return "bg-orange-100 text-orange-800 border-orange-200";
       case "Normal":
@@ -358,7 +356,7 @@ export default function TokenQueuePage() {
 
   return (
     <AuthGuard
-      allowedRoles={["receptionist", "admin"]}
+      allowedRoles={["RECEPTIONIST", "ADMIN"]}
       className="container mx-auto p-6 space-y-6"
     >
       <Navbar />
@@ -510,7 +508,6 @@ export default function TokenQueuePage() {
                       <SelectContent>
                         <SelectItem value="Normal">Normal</SelectItem>
                         <SelectItem value="Urgent">Urgent</SelectItem>
-                        <SelectItem value="Emergency">Emergency</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -628,7 +625,7 @@ export default function TokenQueuePage() {
             {tokens.length > 0 ? (
               tokens
                 .sort((a, b) => {
-                  const priorityOrder = { Emergency: 3, Urgent: 2, Normal: 1 };
+                  const priorityOrder = { Urgent: 2, Normal: 1 };
                   const priorityDiff =
                     priorityOrder[b.priority] - priorityOrder[a.priority];
                   return priorityDiff !== 0

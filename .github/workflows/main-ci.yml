@@ -1,4 +1,4 @@
-name: Main App CI
+name: CI/CD Pipeline - Main
 
 on:
   push:
@@ -35,4 +35,10 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build:ci
+
+      - name: Upload build status
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-status-main
+          path: main/build-status.txt

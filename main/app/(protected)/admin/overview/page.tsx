@@ -42,16 +42,9 @@ export default function AdminOverviewPage() {
         {
           title: "Admin Dashboard",
           description:
-            "Main admin dashboard with system analytics and emergency alerts",
+            "Main admin dashboard with system analytics",
           path: "/admin",
           icon: <LayoutDashboard className="h-6 w-6 text-blue-600" />,
-          badge: "Core",
-        },
-        {
-          title: "Display Management",
-          description: "Manage all hospital display screens",
-          path: "/admin/displays",
-          icon: <Monitor className="h-6 w-6 text-purple-600" />,
           badge: "Core",
         },
         {
@@ -87,14 +80,7 @@ export default function AdminOverviewPage() {
           path: "/doctor/patients",
           icon: <Users className="h-6 w-6 text-green-600" />,
           badge: "Doctor",
-        },
-        {
-          title: "OT Management",
-          description: "Operating theater scheduling and management",
-          path: "/doctor/ot",
-          icon: <Activity className="h-6 w-6 text-red-600" />,
-          badge: "Doctor",
-        },
+        }
       ],
     },
     Receptionist: {
@@ -156,25 +142,12 @@ export default function AdminOverviewPage() {
           badge: "User",
         },
       ],
-    },
-    Public: {
-      icon: <Globe className="h-5 w-5" />,
-      color: "bg-teal-100 text-teal-800 border-teal-200",
-      pages: [
-        {
-          title: "Patient Portal",
-          description: "Public patient portal",
-          path: "/",
-          icon: <Home className="h-6 w-6 text-blue-600" />,
-          badge: "Public",
-        },
-      ],
-    },
+    }
   };
 
   return (
     <AuthGuard
-      allowedRoles={["admin"]}
+      allowedRoles={["ADMIN"]}
       className="container mx-auto p-6 space-y-8"
     >
       <Navbar />

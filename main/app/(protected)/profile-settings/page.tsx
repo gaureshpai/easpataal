@@ -11,12 +11,13 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { User } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+import { useSession } from "next-auth/react";
 import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 
 export default function ProfileSettings() {
-  const { user } = useAuth();
+  const { data: session } = useSession();
+  const user = session?.user;
 
   if (!user) {
     return (
@@ -33,7 +34,7 @@ export default function ProfileSettings() {
 
   return (
     <AuthGuard
-      allowedRoles={["admin", "doctor", "receptionist", "pharmacist"]}
+      allowedRoles={["ADMIN", "DOCTOR", "RECEPTIONIST", "PHARMACIST"]}
       className="container mx-auto p-6 space-y-6"
     >
       <Navbar />

@@ -138,22 +138,6 @@
   }
 }
 
-.emergency-alert {
-  animation: emergency-pulse 1s ease-in-out infinite alternate;
-}
-
-@keyframes emergency-pulse {
-  from {
-    background-color: rgb(254 242 242);
-    border-color: rgb(239 68 68);
-  }
-  to {
-    background-color: rgb(239 68 68);
-    border-color: rgb(220 38 38);
-    color: white;
-  }
-}
-
 @media (max-width: 768px) {
   .mobile-card {
     @apply mx-2 my-1;

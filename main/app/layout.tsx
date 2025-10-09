@@ -2,7 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { AuthProvider } from "@/hooks/use-auth"
+import Provider from "@/components/SessionProvider";
+import { getServerSession } from "next-auth";
 import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -12,18 +13,20 @@ export const metadata: Metadata = {
   description: "Hospital queue management system - EASPATAAL",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await getServerSession();
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
+        <Provider session={session}>
           {children}
           <Toaster />
-        </AuthProvider>
+        </Provider>
       </body>
     </html>
   )
