@@ -1,20 +1,30 @@
-import React from "react";
-import type { Metadata } from "next";
-import "./globals.css";
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { AuthProvider } from "@/hooks/use-auth"
+import { Toaster } from "@/components/ui/toaster"
 
-export const metadata = {
-  title: "main",
-  description: "This is the main project",
-};
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "EASPATAAL",
+  description: "Hospital queue management system - EASPATAAL",
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
+      </body>
     </html>
-  );
+  )
 }
