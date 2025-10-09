@@ -44,8 +44,6 @@ import type {
 import {
   updatePatientAction,
   updatePatientVitalsAction,
-  administerMedicationAction,
-  completeTaskAction,
   refreshDashboardAction,
 } from "@/lib/receptionist-actions";
 import { EmergencyAlertsModal } from "./emergency-alerts-modal";
@@ -284,11 +282,6 @@ export default function ReceptionistDashboardContent({
         </div>
       </div>
 
-      <EmergencyAlertsModal
-        isOpen={isEmergencyAlertsModalOpen}
-        onClose={() => setIsEmergencyAlertsModalOpen(false)}
-      />
-
       {criticalPatients.length > 0 && (
         <Alert className="border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
@@ -335,7 +328,6 @@ export default function ReceptionistDashboardContent({
       <Tabs defaultValue="patients" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 bg-white">
           <TabsTrigger value="patients">Patients</TabsTrigger>
-          <TabsTrigger value="surgeries">OT Updates</TabsTrigger>
         </TabsList>
 
         <TabsContent value="patients" className="space-y-6">
@@ -458,65 +450,6 @@ export default function ReceptionistDashboardContent({
                     </CardContent>
                   </Card>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="surgeries" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="h-5 w-5 text-blue-600" />
-                <span>Operating Theater Updates</span>
-              </CardTitle>
-              <CardDescription>
-                Live surgery schedule from OT management system
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {todaySurgeries.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No surgeries scheduled
-                    </h3>
-                    <p className="text-gray-600">
-                      No surgeries are scheduled for today.
-                    </p>
-                  </div>
-                ) : (
-                  todaySurgeries.map((surgery) => (
-                    <div
-                      key={surgery.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="text-center w-20">
-                          <p className="font-medium text-gray-900">
-                            {surgery.scheduledTime}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {surgery.estimatedDuration}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="font-medium">{surgery.patientName}</p>
-                          <p className="text-sm text-gray-600">
-                            {surgery.procedure}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            {surgery.surgeon} • {surgery.theater}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge className={getSurgeryStatusColor(surgery.status)}>
-                        {surgery.status.replace("-", " ")}
-                      </Badge>
-                    </div>
-                  ))
-                )}
               </div>
             </CardContent>
           </Card>

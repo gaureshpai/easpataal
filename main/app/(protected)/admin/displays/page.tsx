@@ -46,8 +46,6 @@ const CONTENT_TYPES = [
     icon: Monitor,
     description: "Combined information display for Staffs",
   },
-  { value: "OT Status", label: "OT Status", icon: Monitor, description: "OT status and scheduling" },
-  { value: "Blood Bank", label: "Blood Bank", icon: Monitor, description: "Blood bank inventory" },
   {
     value: "Department Token Queue",
     label: "Department Token Queue",
@@ -307,7 +305,7 @@ export default function DisplayManagement() {
                   <Select
                     name="content"
                     value={createForm.content}
-                    onValueChange={(value) => setCreateForm({ ...createForm, content: value })}
+                    onValueChange={(value: string) => setCreateForm({ ...createForm, content: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -327,7 +325,7 @@ export default function DisplayManagement() {
                     <Label htmlFor="create-department">Department</Label>
                     <Select
                       value={createForm.departmentId}
-                      onValueChange={(value) => setCreateForm({ ...createForm, departmentId: value })}
+                      onValueChange={(value : string) => setCreateForm({ ...createForm, departmentId: value })}
                       required
                     >
                       <SelectTrigger>
@@ -349,7 +347,7 @@ export default function DisplayManagement() {
                   <Select
                     name="status"
                     value={createForm.status}
-                    onValueChange={(value) => setCreateForm({ ...createForm, status: value })}
+                    onValueChange={(value : string) => setCreateForm({ ...createForm, status: value })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -499,7 +497,7 @@ export default function DisplayManagement() {
               <Select
                 name="content"
                 value={editForm.content}
-                onValueChange={(value) => setEditForm({ ...editForm, content: value })}
+                onValueChange={(value : string) => setEditForm({ ...editForm, content: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -524,7 +522,7 @@ export default function DisplayManagement() {
                 <Label htmlFor="edit-department">Department</Label>
                 <Select
                   value={editForm.departmentId}
-                  onValueChange={(value) => setEditForm({ ...editForm, departmentId: value })}
+                  onValueChange={(value : string) => setEditForm({ ...editForm, departmentId: value })}
                   required
                 >
                   <SelectTrigger>
@@ -545,7 +543,7 @@ export default function DisplayManagement() {
               <Select
                 name="status"
                 value={editForm.status}
-                onValueChange={(value) => setEditForm({ ...editForm, status: value })}
+                onValueChange={(value : string) => setEditForm({ ...editForm, status: value })}
               >
                 <SelectTrigger>
                   <SelectValue />

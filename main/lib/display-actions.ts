@@ -19,11 +19,6 @@ export interface DisplayUpdateData {
     isActive?: boolean
 }
 
-interface DisplayConfig {
-    departmentId?: string
-    [key: string]: any
-}
-
 export interface ActionResponse<T> {
     success: boolean
     data?: T

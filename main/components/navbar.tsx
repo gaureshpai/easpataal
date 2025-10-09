@@ -71,12 +71,7 @@ export function Navbar() {
           name: "Patients",
           href: "/doctor/patients",
           icon: <User className="h-4 w-4 mr-2" />,
-        },
-        {
-          name: "OT Status",
-          href: "/doctor/ot",
-          icon: <Heart className="h-4 w-4 mr-2" />,
-        },
+        }
       ],
       pharmacist: [
         {

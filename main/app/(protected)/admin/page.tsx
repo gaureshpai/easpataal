@@ -22,14 +22,10 @@ import {
   getAllAnnouncementsAction,
   createAnnouncementAction,
   deleteAnnouncementAction,
-  resolveAnnouncementAction, 
-  createEmergencyAlertAction,
-  getRecentEmergencyAlertsAction,
-  resolveEmergencyAlertAction,
+  resolveAnnouncementAction,
   getSystemAnalyticsAction,
   type ContentItem,
   type Announcement,
-  type EmergencyAlert,
 } from "@/lib/content-actions"
 import { useToast } from "@/hooks/use-toast"
 
@@ -37,23 +33,16 @@ export default function AdminPanel() {
   const [displays, setDisplays] = useState<DisplayData[]>([])
   const [contentItems, setContentItems] = useState<ContentItem[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [emergencyAlerts, setEmergencyAlerts] = useState<EmergencyAlert[]>([])
   const [analytics, setAnalytics] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
   const [announcementsLoading, setAnnouncementsLoading] = useState(true)
   const [contentLoading, setContentLoading] = useState(true)
-  const [emergencyAlertsLoading, setEmergencyAlertsLoading] = useState(true)
 
   const [isPending, startTransition] = useTransition()
   const { user } = useAuth()
   const { toast } = useToast()
 
-  const [emergencyAlert, setEmergencyAlert] = useState({
-    type: "",
-    location: "",
-    description: "",
-  })
   const [newAnnouncement, setNewAnnouncement] = useState("")
   const [isAnnouncementDialogOpen, setIsAnnouncementDialogOpen] = useState(false)
 
@@ -91,13 +80,6 @@ export default function AdminPanel() {
         }
         setAnnouncementsLoading(false)
 
-        setEmergencyAlertsLoading(true)
-        const alertsResult = await getRecentEmergencyAlertsAction()
-        if (alertsResult.success && alertsResult.data) {
-          setEmergencyAlerts(alertsResult.data)
-        }
-        setEmergencyAlertsLoading(false)
-
         const analyticsResult = await getSystemAnalyticsAction()
         if (analyticsResult.success && analyticsResult.data) {
           setAnalytics(analyticsResult.data)
@@ -118,11 +100,6 @@ export default function AdminPanel() {
   const fetchRealTimeData = async () => {
     try {
       startTransition(async () => {
-        const alertsResult = await getRecentEmergencyAlertsAction()
-        if (alertsResult.success && alertsResult.data) {
-          setEmergencyAlerts(alertsResult.data)
-        }
-
         const analyticsResult = await getSystemAnalyticsAction()
         if (analyticsResult.success && analyticsResult.data) {
           setAnalytics(analyticsResult.data)
@@ -150,46 +127,6 @@ export default function AdminPanel() {
     } finally {
       setAnnouncementsLoading(false)
     }
-  }
-
-  const handleEmergencyAlert = async (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-
-    if (!emergencyAlert.type || !emergencyAlert.location) {
-      toast({
-        title: "Error",
-        description: "Alert type and location are required",
-        variant: "destructive",
-      })
-      return
-    }
-
-    startTransition(async () => {
-      const formData = new FormData()
-      formData.append("type", emergencyAlert.type)
-      formData.append("location", emergencyAlert.location)
-      formData.append("description", emergencyAlert.description)
-
-      const result = await createEmergencyAlertAction(formData)
-
-      if (result.success) {
-        toast({
-          title: "Emergency Alert Sent",
-          description: `${emergencyAlert.type} alert at ${emergencyAlert.location}`,
-          variant: "default",
-        })
-        setEmergencyAlert({ type: "", location: "", description: "" })
-
-        fetchRealTimeData()
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to send emergency alert",
-          variant: "destructive",
-        })
-      }
-    })
   }
 
   const handlePublishAnnouncement = async (e: React.FormEvent) => {
@@ -278,28 +215,6 @@ export default function AdminPanel() {
     })
   }
 
-  const handleResolveAlert = async (id: string) => {
-    startTransition(async () => {
-      const result = await resolveEmergencyAlertAction(id)
-
-      if (result.success) {
-        toast({
-          title: "Alert Resolved",
-          description: "The emergency alert has been marked as resolved",
-          variant: "default",
-        })
-
-        fetchRealTimeData()
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to resolve alert",
-          variant: "destructive",
-        })
-      }
-    })
-  }
-
   const LoadingSpinner = () => (
     <div className="flex items-center justify-center py-8">
       <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
@@ -311,176 +226,10 @@ export default function AdminPanel() {
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
-        <Tabs defaultValue="content" className="space-y-6">
+        <Tabs defaultValue="analytics" className="space-y-6">
           <TabsList className="w-full flex flex-col md:flex-row bg-white">
-            <TabsTrigger value="content">Content Management</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="emergency">Emergency Alerts</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="content" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Content Management</CardTitle>
-                <CardDescription>Manage announcements and educational content</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Dialog open={isAnnouncementDialogOpen} onOpenChange={setIsAnnouncementDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Announcement
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-xs md:max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Create New Announcement</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handlePublishAnnouncement} className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="announcement">Announcement Text</Label>
-                        <Textarea
-                          id="announcement"
-                          placeholder="Enter announcement text..."
-                          value={newAnnouncement}
-                          onChange={(e) => setNewAnnouncement(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault()
-                              return false
-                            }
-                          }}
-                          required
-                        />
-                      </div>
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={(e) => {
-                            e.preventDefault()
-                            setIsAnnouncementDialogOpen(false)
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          type="submit"
-                          disabled={isPending || !newAnnouncement.trim()}
-                          onClick={(e) => {
-                            handlePublishAnnouncement(e)
-                          }}
-                        >
-                          {isPending ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Publishing...
-                            </>
-                          ) : (
-                            "Publish Announcement"
-                          )}
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Announcements</CardTitle>
-                <CardDescription>Currently published announcements</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {announcementsLoading ? (
-                  <LoadingSpinner />
-                ) : (
-                  <div className="space-y-3">
-                    {announcements.length > 0 ? (
-                      announcements.map((announcement) => (
-                        <div
-                          key={announcement.id}
-                          className="flex flex-col md:flex-row justify-between md:items-start p-4 rounded-lg border transition-colors hover:bg-gray-50 gap-3"
-                        >
-                          <div className="flex-1 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm font-medium">{announcement.text}</p>
-                            </div>
-                            <p className="text-xs text-gray-500">
-                              Created by {announcement.createdBy} on{" "}
-                              {new Date(announcement.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-
-                          <div className="flex md:flex-row flex-col md:space-x-2 space-y-2 md:space-y-0">
-                            {!announcement.resolved ? (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleResolveAnnouncement(announcement.id)}
-                                  className="border-green-600 text-green-600 hover:bg-green-50"
-                                >
-                                  Resolve <CheckCircle className="h-3 w-3 ml-1" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteAnnouncement(announcement.id)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                              </>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteAnnouncement(announcement.id)}
-                                disabled={isPending}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500">No active announcements</p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Display Content Types</CardTitle>
-                <CardDescription>Currently displayed content across all screens</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {contentLoading ? (
-                  <LoadingSpinner />
-                ) : (
-                  <div className="space-y-3">
-                    {contentItems.length > 0 ? (
-                      contentItems.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                          <div>
-                            <p className="font-medium">{item.title}</p>
-                            <p className="text-sm text-gray-600">Active on {item.activeScreens} screens</p>
-                          </div>
-                          <Badge variant="outline">{item.type}</Badge>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500">No active content found</p>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -555,159 +304,6 @@ export default function AdminPanel() {
                     <span className="text-sm text-yellow-600">{analytics?.performance?.errorRate || 0}%</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="emergency" className="space-y-6">
-            <Card className="border-red-200">
-              <CardHeader className="bg-red-50">
-                <CardTitle className="flex items-center text-red-700">
-                  <AlertTriangle className="h-5 w-5 mr-2" />
-                  Emergency Alert System
-                </CardTitle>
-                <CardDescription>Send critical alerts to all hospital displays immediately</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <form onSubmit={handleEmergencyAlert} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="alert-type">Alert Type</Label>
-                    <Select
-                      value={emergencyAlert.type}
-                      onValueChange={(value) => setEmergencyAlert({ ...emergencyAlert, type: value })}
-                      required
-                    >
-                      <SelectTrigger id="alert-type">
-                        <SelectValue placeholder="Select alert type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Code Blue">Code Blue (Medical Emergency)</SelectItem>
-                        <SelectItem value="Code Red">Code Red (Fire)</SelectItem>
-                        <SelectItem value="Code Black">Code Black (Bomb Threat)</SelectItem>
-                        <SelectItem value="Code Orange">Code Orange (External Disaster)</SelectItem>
-                        <SelectItem value="Code Silver">Code Silver (Active Shooter)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="alert-location">Location</Label>
-                    <Input
-                      id="alert-location"
-                      placeholder="Enter location"
-                      value={emergencyAlert.location}
-                      onChange={(e) => setEmergencyAlert({ ...emergencyAlert, location: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="alert-description">Additional Details (Optional)</Label>
-                    <Textarea
-                      id="alert-description"
-                      placeholder="Enter additional details..."
-                      value={emergencyAlert.description}
-                      onChange={(e) => setEmergencyAlert({ ...emergencyAlert, description: e.target.value })}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault()
-                          return false
-                        }
-                      }}
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-red-600 hover:bg-red-700"
-                    disabled={isPending || !emergencyAlert.type || !emergencyAlert.location}
-                  >
-                    {isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Sending Alert...
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="h-4 w-4 mr-2" />
-                        Send Emergency Alert
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="text-sm text-gray-500 text-center">
-                  This will immediately broadcast the alert to all hospital displays and notify relevant staff.
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Emergency Alerts</CardTitle>
-                <CardDescription>History of emergency alerts sent in the past 7 days</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {emergencyAlertsLoading ? (
-                  <LoadingSpinner />
-                ) : (
-                  <div className="space-y-3">
-                    {emergencyAlerts.length > 0 ? (
-                      emergencyAlerts.map((alert) => (
-                        <div
-                          key={alert.id}
-                          className={`flex flex-col md:flex-row justify-between md:items-center gap-2 p-3 rounded-lg ${alert.active
-                            ? "bg-red-50 border border-red-200"
-                            : "bg-gray-50"
-                            }`}
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center flex-wrap gap-2">
-                              <Badge
-                                className={`mr-2 ${alert.codeType === "Code Blue"
-                                  ? "bg-blue-600"
-                                  : alert.codeType === "Code Red"
-                                    ? "bg-red-600"
-                                    : alert.codeType === "Code Black"
-                                      ? "bg-black"
-                                      : alert.codeType === "Code Orange"
-                                        ? "bg-orange-600"
-                                        : "bg-gray-600"
-                                  }`}
-                              >
-                                {alert.codeType}
-                              </Badge>
-                              <p className="font-medium">{alert.location}</p>
-                            </div>
-                            <p className="text-sm text-gray-600">{alert.message}</p>
-                            <p className="text-xs text-gray-500">{new Date(alert.createdAt).toLocaleString()}</p>
-                          </div>
-
-                          <div className="flex md:items-center justify-end md:justify-center">
-                            {alert.active ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleResolveAlert(alert.id)}
-                                disabled={isPending}
-                                className="border-green-600 text-green-600 hover:bg-green-50"
-                              >
-                                <CheckCircle className="h-4 w-4 mr-1" />
-                                Resolve
-                              </Button>
-                            ) : (
-                              <Badge variant="outline" className="border-green-600 text-green-600">
-                                Resolved
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-center text-gray-500">No emergency alerts found</p>
-                    )}
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

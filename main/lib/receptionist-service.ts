@@ -58,30 +58,6 @@ export interface ReceptionistDashboardData {
   tasks: Task[];
 }
 
-export async function getEmergencyAlerts() {
-  try {
-    const alerts = await prisma.emergencyAlert.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 20,
-    });
-
-    return alerts.map((alert) => ({
-      id: alert.id,
-      codeType: alert.codeType,
-      location: alert.location,
-      message: alert.message,
-      status: alert.status,
-      priority: alert.priority,
-      createdAt: alert.createdAt.toISOString(),
-      resolvedAt: alert.resolvedAt?.toISOString() || null,
-      broadcastTo: alert.broadcastTo,
-    }));
-  } catch (error) {
-    console.error("Error fetching emergency alerts:", error);
-    throw new Error("Failed to fetch emergency alerts");
-  }
-}
-
 export async function getReceptionistDashboardData(): Promise<ReceptionistDashboardData> {
   try {
     const patientsData = await prisma.patient.findMany({

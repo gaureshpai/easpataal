@@ -76,8 +76,6 @@ export function NotificationsPanel() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "emergency":
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
       case "warning":
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       case "success":

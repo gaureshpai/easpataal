@@ -23,16 +23,6 @@ export interface Announcement {
     resolved?: boolean
 }
 
-export interface EmergencyAlert {
-    id: string
-    codeType: string
-    location: string
-    message: string
-    createdAt: string
-    active: boolean
-    priority: number
-}
-
 export interface ContentResponse<T> {
     success: boolean
     data?: T
@@ -181,103 +171,6 @@ export async function resolveAnnouncementAction(alertId: string) {
     }
 }
 
-export async function createEmergencyAlertAction(formData: FormData): Promise<ContentResponse<EmergencyAlert>> {
-    try {
-        const codeType = formData.get("type") as string
-        const location = formData.get("location") as string
-        const description = formData.get("description") as string
-
-        if (!codeType || !location) {
-            return { success: false, error: "Alert type and location are required" }
-        }
-        
-        const alert = await prisma.emergencyAlert.create({
-            data: {
-                codeType,
-                location,
-                message: description || `${codeType} at ${location}`,
-                status: "active",
-                priority: getPriorityForCodeType(codeType),
-                broadcastTo: ["ALL"],
-            },
-        })
-        
-        await prisma.display.updateMany({
-            where: { status: "online" },
-            data: {
-                lastUpdate: new Date(),
-            },
-        })
-
-        await prisma.$disconnect()
-        revalidatePath("/admin")
-
-        return {
-            success: true,
-            data: {
-                id: alert.id,
-                codeType: alert.codeType,
-                location: alert.location,
-                message: alert.message,
-                createdAt: alert.createdAt.toISOString(),
-                active: alert.status === "active",
-                priority: alert.priority,
-            },
-        }
-    } catch (error) {
-        console.error("Error creating emergency alert:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to create emergency alert" }
-    }
-}
-
-export async function getRecentEmergencyAlertsAction(): Promise<ContentResponse<EmergencyAlert[]>> {
-    try {
-        const alerts = await prisma.emergencyAlert.findMany({
-            orderBy: { createdAt: "desc" },
-            take: 10,
-        })
-
-        const formattedAlerts: EmergencyAlert[] = alerts.map((alert:any) => ({
-            id: alert.id,
-            codeType: alert.codeType,
-            location: alert.location,
-            message: alert.message,
-            createdAt: alert.createdAt.toISOString(),
-            active: alert.status === "active",
-            priority: alert.priority,
-        }))
-
-        await prisma.$disconnect()
-        return { success: true, data: formattedAlerts }
-    } catch (error) {
-        console.error("Error fetching emergency alerts:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to fetch emergency alerts" }
-    }
-}
-
-export async function resolveEmergencyAlertAction(alertId: string): Promise<ContentResponse<boolean>> {
-    try {
-        await prisma.emergencyAlert.update({
-            where: { id: alertId },
-            data: {
-                status: "resolved",
-                resolvedAt: new Date(),
-            },
-        })
-
-        await prisma.$disconnect()
-        revalidatePath("/admin")
-
-        return { success: true, data: true }
-    } catch (error) {
-        console.error("Error resolving emergency alert:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to resolve emergency alert" }
-    }
-}
-
 export async function getSystemAnalyticsAction() {
     try {
         const displays = await prisma.display.findMany()
@@ -367,23 +260,6 @@ export async function getSystemAnalyticsAction() {
         console.error("Error fetching system analytics:", error)
         await prisma.$disconnect()
         return { success: false, error: "Failed to fetch system analytics" }
-    }
-}
-
-function getPriorityForCodeType(codeType: string): number {
-    switch (codeType) {
-        case "Code Blue":
-            return 5
-        case "Code Red":
-            return 5
-        case "Code Black":
-            return 4
-        case "Code Silver":
-            return 4
-        case "Code Orange":
-            return 3
-        default:
-            return 2
     }
 }
 

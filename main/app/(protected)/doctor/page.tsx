@@ -638,7 +638,7 @@ export default function DoctorDashboard() {
                                   <Label>Frequency</Label>
                                   <Select
                                     value={medication.frequency}
-                                    onValueChange={(value) => updateMedication(medication.id, "frequency", value)}
+                                    onValueChange={(value: string) => updateMedication(medication.id, "frequency", value)}
                                   >
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select frequency" />
@@ -658,7 +658,7 @@ export default function DoctorDashboard() {
                                   <Label>Duration</Label>
                                   <Select
                                     value={medication.duration}
-                                    onValueChange={(value) => updateMedication(medication.id, "duration", value)}
+                                    onValueChange={(value: string) => updateMedication(medication.id, "duration", value)}
                                   >
                                     <SelectTrigger>
                                       <SelectValue placeholder="Select duration" />

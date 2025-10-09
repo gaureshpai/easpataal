@@ -53,34 +53,6 @@ export async function getDoctorNotifications(doctorId: string): Promise<Notifica
 
         const notifications: NotificationData[] = []
         
-        systemAlerts.forEach((alert) => {
-            notifications.push({
-                id: `sys-${alert.id}`,
-                title: `System Alert: ${alert.type}`,
-                message: alert.message,
-                type: alert.severity === "high" ? "emergency" : alert.severity === "medium" ? "warning" : "info",
-                priority: alert.severity as "low" | "medium" | "high",
-                read: false,
-                createdAt: alert.createdAt,
-                userId: doctorId,
-                relatedId: alert.id,
-            })
-        })
-        
-        emergencyAlerts.forEach((alert) => {
-            notifications.push({
-                id: `emerg-${alert.id}`,
-                title: `Emergency: ${alert.codeType}`,
-                message: `${alert.message} - Location: ${alert.location}`,
-                type: "emergency",
-                priority: alert.priority === 1 ? "high" : "medium",
-                read: false,
-                createdAt: alert.createdAt,
-                userId: doctorId,
-                relatedId: alert.id,
-            })
-        })
-        
         prescriptions.forEach((prescription) => {
             notifications.push({
                 id: `presc-${prescription.id}`,

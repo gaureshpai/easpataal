@@ -3,7 +3,7 @@ import type { Role } from "@prisma/client";
 import type { PatientData } from "./doctor-service";
 import type { OTData } from "./ot-service";
 
-export const roles: Role[] = ["ADMIN", "DOCTOR", "NURSE", "PHARMACIST"];
+export const roles: Role[] = ["ADMIN", "DOCTOR", "RECEPTIONIST", "PHARMACIST"];
 
 export const fallbackDepartments = [
   "Administration",
@@ -60,16 +60,6 @@ export interface OTTheater {
   lastCleaned?: string;
   maintenanceType?: string;
   estimatedCompletion?: string;
-}
-
-export interface EmergencyAlert {
-  id: string;
-  codeType: string;
-  message: string;
-  location: string;
-  priority: number;
-  active: boolean;
-  createdAt: string;
 }
 
 export interface Medication {
@@ -208,13 +198,6 @@ export interface DisplayData {
     location: string;
     current_tokens: number;
   }>;
-  emergencyAlerts: Array<{
-    id: string;
-    codeType: string;
-    location: string;
-    message: string;
-    priority: number;
-  }>;
   drugInventory: Array<{
     drug_id: string;
     drug_name: string;
@@ -222,15 +205,6 @@ export interface DisplayData {
     min_stock: number;
     status: string;
   }>;
-  bloodBank: Array<{
-    blood_id: string;
-    blood_type: string;
-    units_available: number;
-    critical_level: number;
-    status: string;
-    expiry_date: string;
-  }>;
-  otStatus?: OTData;
   contentType?: string;
 }
 
@@ -272,7 +246,7 @@ export interface User {
   name: string;
   email?: string;
   password?: string;
-  role: "admin" | "doctor" | "receptionist" | "pharmacist" | "patient";
+  role: "admin" | "doctor" | "receptionist" | "pharmacist";
   username?: string;
   department?: string;
   specialization?: string;

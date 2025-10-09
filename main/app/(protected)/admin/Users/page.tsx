@@ -375,7 +375,7 @@ const UserCRUDPage = () => {
     const colors: Record<Role, string> = {
       ADMIN: "bg-red-100 text-red-800",
       DOCTOR: "bg-blue-100 text-blue-800",
-      NURSE: "bg-green-100 text-green-800",
+      RECEPTIONIST: "bg-green-100 text-green-800",
       PHARMACIST: "bg-purple-100 text-purple-800",
     }
     return colors[role] || "bg-gray-100 text-gray-800"
@@ -566,7 +566,7 @@ const UserCRUDPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.byRole?.NURSE || users.filter((u) => u.role === "NURSE").length}
+              {stats?.byRole?.RECEPTIONIST || users.filter((u) => u.role === "RECEPTIONIST").length}
             </div>
           </CardContent>
         </Card>

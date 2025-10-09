@@ -6,16 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Users, Activity, AlertTriangle, Heart, Pill, Droplets } from "lucide-react"
 import { getDisplayDataAction } from "@/lib/display-actions"
-import { getOTStatus } from "@/lib/ot-service"
 import type { DisplayData, PublicDisplayProps } from "@/lib/helpers"
 
 export default function PublicDisplayPage({ displayId, displayData }: PublicDisplayProps) {
     const [data, setData] = useState<DisplayData>({
         tokenQueue: [],
         departments: [],
-        emergencyAlerts: [],
         drugInventory: [],
-        bloodBank: [],
         contentType: "Mixed Dashboard",
     })
     const [currentTime, setCurrentTime] = useState<Date | null>(null)
@@ -34,11 +31,11 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
     const getDashboardSections = (contentType: string): string[] => {
         switch (contentType) {
             case "Mixed Dashboard":
-                return ["tokenQueue", "departments", "otStatus", "drugInventory", "bloodBank", "hospitalInfo"]
+                return ["tokenQueue", "departments", "drugInventory", "hospitalInfo"]
             case "Patient Dashboard":
                 return ["tokenQueue", "departments", "hospitalInfo"]
             case "Staff Dashboard":
-                return ["tokenQueue", "departments", "otStatus", "drugInventory", "bloodBank"]
+                return ["tokenQueue", "departments", "drugInventory"]
             default:
                 return ["tokenQueue", "departments", "drugInventory", "hospitalInfo"]
         }
@@ -88,9 +85,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
 
                 if (!heartbeatIntervalRef.current) {
                     heartbeatIntervalRef.current = setInterval(() => sendHeartbeat("online"), 15000)
-                }
-                if (!dataIntervalRef.current) {
-                    dataIntervalRef.current = setInterval(() => fetchDisplayData(false), 5000)
                 }
                 if (!rotationIntervalRef.current && isDashboardType(data.contentType)) {
                     startContentRotation()
@@ -166,13 +160,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
     }, [displayId])
 
     useEffect(() => {
-        fetchDisplayData()
-
-        dataIntervalRef.current = setInterval(() => {
-            if (!document.hidden) {
-                fetchDisplayData(false)
-            }
-        }, 5000)
 
         timeIntervalRef.current = setInterval(() => setCurrentTime(new Date()), 1000)
 
@@ -226,26 +213,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
         }, 15000)
     }
 
-    const fetchDisplayData = async (showLoading = true) => {
-        try {
-            if (showLoading) setIsLoading(true)
-
-            startTransition(async () => {
-                const [displayData, otData] = await Promise.all([getDisplayDataAction(displayId), getOTStatus()])
-
-                setData({
-                    ...displayData,
-                    otStatus: otData,
-                })
-                setLastUpdate(new Date())
-            })
-        } catch (error) {
-            console.error("Error fetching display data:", error)
-        } finally {
-            if (showLoading) setIsLoading(false)
-        }
-    }
-
     const contentType = data.contentType || displayData?.content || "Mixed Dashboard"
 
     const shouldShowTokenQueue = () => {
@@ -290,17 +257,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
         }
         return false
     }
-
-    const shouldShowOTStatus = () => {
-        if (contentType === "OT Status") return true
-        if (contentType === "Patient Dashboard") return false
-        if (isDashboardType(contentType)) {
-            return activeSection === "otStatus"
-        }
-        return false
-    }
-
-    const hasEmergencyAlerts = data.emergencyAlerts && data.emergencyAlerts.length > 0
 
     const getDashboardDisplayName = (type: string): string => {
         switch (type) {
@@ -364,32 +320,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
                         Display is hidden or in background - status set to offline
                     </AlertDescription>
                 </Alert>
-            )}
-
-            {hasEmergencyAlerts && (
-                <div className="fixed top-4 right-4 z-50 w-80">
-                    <Card className="border-2 border-red-500 bg-red-50 shadow-lg">
-                        <CardHeader className="p-3 bg-red-600 text-white">
-                            <CardTitle className="text-sm font-bold flex items-center">
-                                <AlertTriangle className="h-4 w-4 mr-2 animate-pulse" />
-                                Emergency Alerts ({data.emergencyAlerts.length})
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-3 max-h-32 overflow-y-auto">
-                            <div className="space-y-2">
-                                {data.emergencyAlerts.map((alert) => (
-                                    <div key={alert.id} className="bg-red-100 p-2 rounded">
-                                        <div className="flex items-center space-x-2 mb-1">
-                                            <Badge className="bg-red-600">{alert.codeType}</Badge>
-                                            <span className="font-bold text-sm">{alert.location}</span>
-                                        </div>
-                                        <p className="text-xs text-red-800">{alert.message}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
             )}
 
             <div className="mb-8">
@@ -565,178 +495,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
                     </Card>
                 )}
 
-                {shouldShowBloodBank() && (
-                    <Card className="shadow-lg lg:col-span-2 min-h-[400px]">
-                        <CardHeader className="bg-red-800 text-white">
-                            <CardTitle className="flex items-center space-x-2 text-2xl">
-                                <Droplets className="h-6 w-6" />
-                                <span>Blood Bank Alerts</span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            {data.bloodBank.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {data.bloodBank?.map((blood: any) => (
-                                        <Alert
-                                            key={blood.blood_id}
-                                            className={`${blood.status === "Low"
-                                                    ? "border-green-600 bg-green-100"
-                                                    : "border-red-600 bg-red-100"
-                                                }`}
-                                        >
-                                            <Droplets className="h-4 w-4 text-red-700" />
-                                            <AlertDescription className="text-red-900">
-                                                <strong>{blood.blood_type} Blood</strong>
-                                                <br />
-                                                <span className="text-sm">Available: {blood.units_available} units</span>
-                                                <br />
-                                                <span className="text-sm">Critical Level: {blood.critical_level} units</span>
-                                                <br />
-                                                <span className="text-sm font-semibold text-red-800">{blood.status} - Contact Blood Bank</span>
-                                                <br />
-                                                <span className="text-xs text-red-700">Expires: {blood.expiry_date}</span>
-                                            </AlertDescription>
-                                        </Alert>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-64">
-                                    <div className="text-center text-gray-500">
-                                        <Droplets className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                                        <h3 className="text-2xl font-semibold mb-2">No Blood Bank Alerts</h3>
-                                        <p className="text-lg">All blood types are currently well stocked.</p>
-                                        <p className="text-sm mt-2">Critical alerts will appear here when stock is low.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
-                {shouldShowOTStatus() && (
-                    <Card className="shadow-lg lg:col-span-2 min-h-[400px]">
-                        <CardHeader className="bg-purple-600 text-white">
-                            <CardTitle className="flex items-center space-x-2 text-2xl">
-                                <Activity className="h-6 w-6" />
-                                <span>Operating Theater Status</span>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            {data.otStatus?.theaters && data.otStatus.theaters.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {data.otStatus.theaters.map((theater) => (
-                                        <div
-                                            key={theater.id}
-                                            className={`p-4 rounded-lg border-2 ${theater.status === "occupied"
-                                                    ? "bg-red-50 border-red-200"
-                                                    : theater.status === "available"
-                                                        ? "bg-green-50 border-green-200"
-                                                        : theater.status === "maintenance"
-                                                            ? "bg-yellow-50 border-yellow-200"
-                                                            : theater.status === "booked"
-                                                                ? "bg-blue-50 border-blue-200"
-                                                                : "bg-gray-50 border-gray-200"
-                                                }`}
-                                        >
-                                            <div className="flex justify-between items-start mb-3">
-                                                <h3 className="font-semibold text-lg">{theater.name}</h3>
-                                                <Badge
-                                                    className={`${theater.status === "occupied"
-                                                            ? "bg-red-500"
-                                                            : theater.status === "available"
-                                                                ? "bg-green-500"
-                                                                : theater.status === "maintenance"
-                                                                    ? "bg-yellow-500"
-                                                                    : theater.status === "booked"
-                                                                        ? "bg-blue-500"
-                                                                        : "bg-gray-500"
-                                                        }`}
-                                                >
-                                                    {theater.status === "occupied"
-                                                        ? "In Use"
-                                                        : theater.status === "available"
-                                                            ? "Available"
-                                                            : theater.status === "maintenance"
-                                                                ? "Maintenance"
-                                                                : theater.status === "booked"
-                                                                    ? "Scheduled"
-                                                                    : theater.status === "cleaning"
-                                                                        ? "Cleaning"
-                                                                        : theater.status}
-                                                </Badge>
-                                            </div>
-
-                                            {theater.currentSurgery && (
-                                                <div className="space-y-2">
-                                                    <div className="text-sm">
-                                                        <strong>Current Surgery:</strong>
-                                                        <p className="text-gray-700">{theater.currentSurgery.procedure}</p>
-                                                        <p className="text-gray-600">Patient: {theater.currentSurgery.patient}</p>
-                                                        <p className="text-gray-600">Surgeon: {theater.currentSurgery.surgeon}</p>
-                                                    </div>
-                                                    <div className="flex justify-between text-sm text-gray-600">
-                                                        <span>Started: {theater.currentSurgery.startTime}</span>
-                                                        <span>Elapsed: {theater.currentSurgery.elapsed}</span>
-                                                    </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                                        <div
-                                                            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                                            style={{ width: `${theater.currentSurgery.progress}%` }}
-                                                        ></div>
-                                                    </div>
-                                                    <div className="text-xs text-gray-500 text-center">
-                                                        Progress: {theater.currentSurgery.progress}%
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {theater.nextSurgery && (
-                                                <div className="space-y-2">
-                                                    <div className="text-sm">
-                                                        <strong>Next Surgery:</strong>
-                                                        <p className="text-gray-700">{theater.nextSurgery.procedure}</p>
-                                                        <p className="text-gray-600">Patient: {theater.nextSurgery.patient}</p>
-                                                        <p className="text-gray-600">Scheduled: {theater.nextSurgery.scheduledTime}</p>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {theater.status === "available" && theater.lastCleaned && (
-                                                <div className="text-sm text-green-600">
-                                                    <p>✓ {theater.lastCleaned}</p>
-                                                </div>
-                                            )}
-
-                                            {theater.status === "maintenance" && theater.maintenanceType && (
-                                                <div className="text-sm text-yellow-600">
-                                                    <p>🔧 {theater.maintenanceType}</p>
-                                                    {theater.estimatedCompletion && <p>Est. completion: {theater.estimatedCompletion}</p>}
-                                                </div>
-                                            )}
-
-                                            {theater.status === "cleaning" && theater.estimatedCompletion && (
-                                                <div className="text-sm text-blue-600">
-                                                    <p>🧹 Cleaning in progress</p>
-                                                    <p>Est. completion: {theater.estimatedCompletion}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex items-center justify-center h-64">
-                                    <div className="text-center text-gray-500">
-                                        <Activity className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                                        <h3 className="text-2xl font-semibold mb-2">No OT Data Available</h3>
-                                        <p className="text-lg">Operating theater information is currently unavailable.</p>
-                                        <p className="text-sm mt-2">Status will be displayed when data is available.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
-
                 {shouldShowHospitalInfo() && (
                     <Card className="shadow-lg lg:col-span-2 min-h-[400px]">
                         <CardHeader className="bg-gray-600 text-white">
@@ -747,11 +505,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
                         </CardHeader>
                         <CardContent className="p-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center mb-6">
-                                <div>
-                                    <h3 className="text-lg font-semibold mb-2">Emergency</h3>
-                                    <p className="text-2xl font-bold text-red-600">108</p>
-                                    <p className="text-gray-600">24/7 Emergency Services</p>
-                                </div>
                                 <div>
                                     <h3 className="text-lg font-semibold mb-2">General Inquiry</h3>
                                     <p className="text-2xl font-bold text-blue-600">0824-2444444</p>
@@ -767,10 +520,6 @@ export default function PublicDisplayPage({ displayId, displayData }: PublicDisp
                                 <div className="bg-blue-50 p-4 rounded-lg">
                                     <h3 className="text-lg font-semibold mb-2 text-blue-700">Key Departments</h3>
                                     <ul className="space-y-2">
-                                        <li className="flex justify-between">
-                                            <span>Emergency</span>
-                                            <span>Ground Floor, Block A</span>
-                                        </li>
                                         <li className="flex justify-between">
                                             <span>Outpatient</span>
                                             <span>First Floor, Block B</span>
