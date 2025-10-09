@@ -7,7 +7,11 @@ import { useEffect, useState } from "react";
 export default function Page() {
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Patient[]>([]);
-  const [tokens, setTokens] = useState<Prisma.TokenQueueGetPayload<{include:{department:true,patient:true}}>[]>([]);
+  const [tokens, setTokens] = useState<
+    Prisma.TokenQueueGetPayload<{
+      include: { department: true; patient: true };
+    }>[]
+  >([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"current" | "history">("current");
   const [feedbackToken, setFeedbackToken] = useState<string | null>(null);
@@ -28,8 +32,16 @@ export default function Page() {
     setSelectedProfile(profileId);
     setLoading(true);
     try {
-      const fetchedTokens: Prisma.TokenQueueGetPayload<{include:{department:true,patient:true}}>[] = await getTokenByPatientId(profileId);
+      const fetchedTokens: Prisma.TokenQueueGetPayload<{
+        include: { department: true; patient: true };
+      }>[] = await getTokenByPatientId(profileId);
       setTokens(fetchedTokens);
+      setInterval(async () => {
+        const fetchedTokens: Prisma.TokenQueueGetPayload<{
+        include: { department: true; patient: true };
+      }>[] = await getTokenByPatientId(profileId);
+      setTokens(fetchedTokens);
+      },5000)
     } catch (error) {
       console.error("Error fetching tokens:", error);
     } finally {
@@ -50,7 +62,7 @@ export default function Page() {
     // Add your feedback submission logic here
     console.log("Submitting feedback for token:", tokenId, {
       rating,
-      feedback: feedbackText
+      feedback: feedbackText,
     });
     // Reset feedback state
     setFeedbackToken(null);
@@ -88,15 +100,16 @@ export default function Page() {
   // Calculate people in line before current token
   const calculatePeopleAhead = (currentToken: any) => {
     const sameQueueTokens = tokens.filter(
-      (t) => 
+      (t) =>
         t.department.id === currentToken.department.id &&
         (t.status === "WAITING" || t.status === "CALLED") &&
         t.id !== currentToken.id
     );
-    
+
     // Count tokens with lower token number or higher priority that are still waiting
     return sameQueueTokens.filter((t) => {
-      if (t.priority === "URGENT" && currentToken.priority !== "URGENT") return true;
+      if (t.priority === "URGENT" && currentToken.priority !== "URGENT")
+        return true;
       if (t.tokenNumber < currentToken.tokenNumber) return true;
       return false;
     }).length;
@@ -110,7 +123,8 @@ export default function Page() {
     (t) => t.status === "COMPLETED" || t.status === "CANCELLED"
   );
 
-  const displayedTokens = activeTab === "current" ? currentTokens : historyTokens;
+  const displayedTokens =
+    activeTab === "current" ? currentTokens : historyTokens;
 
   if (!selectedProfile) {
     return (
@@ -119,13 +133,25 @@ export default function Page() {
           <h1 className="text-3xl font-bold mb-2 text-gray-800">
             Select a Profile
           </h1>
-          <p className="text-gray-600 mb-8">Choose a profile to view token information</p>
+          <p className="text-gray-600 mb-8">
+            Choose a profile to view token information
+          </p>
 
           {profiles.length === 0 ? (
             <div className="flex flex-col items-center justify-center mt-20">
               <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg
+                  className="w-12 h-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
               </div>
               <p className="text-gray-500 text-lg">No profiles available</p>
@@ -163,15 +189,25 @@ export default function Page() {
           <div>
             <h1 className="text-xl font-bold text-gray-800">My Tokens</h1>
             <p className="text-sm text-gray-600">
-              {profiles.find(p => p.id === selectedProfile)?.name}
+              {profiles.find((p) => p.id === selectedProfile)?.name}
             </p>
           </div>
           <button
             onClick={handleBack}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition font-medium flex items-center gap-2"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
             </svg>
             Back
           </button>
@@ -187,21 +223,32 @@ export default function Page() {
           ) : displayedTokens.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-md">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <svg
+                  className="w-10 h-10 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <p className="text-gray-600 text-center">
-                {activeTab === "current" 
-                  ? "No active tokens found" 
+                {activeTab === "current"
+                  ? "No active tokens found"
                   : "No token history available"}
               </p>
             </div>
           ) : (
             <div className="space-y-4">
               {displayedTokens.map((token) => {
-                const peopleAhead = activeTab === "current" ? calculatePeopleAhead(token) : 0;
-                
+                const peopleAhead =
+                  activeTab === "current" ? calculatePeopleAhead(token) : 0;
+
                 return (
                   <div
                     key={token.id}
@@ -212,7 +259,9 @@ export default function Page() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-sm opacity-90">Token Number</p>
-                          <p className="text-3xl font-bold">{token.tokenNumber}</p>
+                          <p className="text-3xl font-bold">
+                            {token.tokenNumber}
+                          </p>
                         </div>
                         <div className="text-right">
                           <span
@@ -230,12 +279,20 @@ export default function Page() {
                     <div className="p-4">
                       <div className="grid grid-cols-2 gap-3 mb-3">
                         <div>
-                          <p className="text-xs text-gray-500 mb-1">Patient Name</p>
-                          <p className="font-semibold text-gray-800">{token.patientName}</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Patient Name
+                          </p>
+                          <p className="font-semibold text-gray-800">
+                            {token.patientName}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500 mb-1">Department</p>
-                          <p className="font-semibold text-gray-800">{token.department.name}</p>
+                          <p className="text-xs text-gray-500 mb-1">
+                            Department
+                          </p>
+                          <p className="font-semibold text-gray-800">
+                            {token.department.name}
+                          </p>
                         </div>
                       </div>
 
@@ -244,97 +301,140 @@ export default function Page() {
                         <div className="bg-blue-50 rounded-xl p-3 mb-3 border border-blue-100">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                              <svg
+                                className="w-5 h-5 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                                />
                               </svg>
-                              <span className="text-sm font-medium text-gray-700">People ahead in queue</span>
+                              <span className="text-sm font-medium text-gray-700">
+                                People ahead in queue
+                              </span>
                             </div>
-                            <span className="text-2xl font-bold text-blue-600">{peopleAhead}</span>
+                            <span className="text-2xl font-bold text-blue-600">
+                              {peopleAhead}
+                            </span>
                           </div>
                         </div>
                       )}
 
                       {/* Feedback Section - Only for completed tokens in history */}
-                      {activeTab === "history" && token.status === "COMPLETED" && (
-                        <div className="mt-3 border-t pt-3">
-                          {feedbackToken === token.id ? (
-                            <div className="space-y-3">
-                              <div>
-                                <p className="text-sm font-medium text-gray-700 mb-2">Rate your experience</p>
-                                <div className="flex gap-2">
-                                  {[1, 2, 3, 4, 5].map((star) => (
-                                    <button
-                                      key={star}
-                                      onClick={() => setRating(star)}
-                                      className="focus:outline-none transition-transform hover:scale-110"
-                                    >
-                                      <svg
-                                        className={`w-8 h-8 ${
-                                          star <= rating ? "text-yellow-400 fill-current" : "text-gray-300"
-                                        }`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
+                      {activeTab === "history" &&
+                        token.status === "COMPLETED" && (
+                          <div className="mt-3 border-t pt-3">
+                            {feedbackToken === token.id ? (
+                              <div className="space-y-3">
+                                <div>
+                                  <p className="text-sm font-medium text-gray-700 mb-2">
+                                    Rate your experience
+                                  </p>
+                                  <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                      <button
+                                        key={star}
+                                        onClick={() => setRating(star)}
+                                        className="focus:outline-none transition-transform hover:scale-110"
                                       >
-                                        <path
-                                          strokeLinecap="round"
-                                          strokeLinejoin="round"
-                                          strokeWidth={2}
-                                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-                                        />
-                                      </svg>
-                                    </button>
-                                  ))}
+                                        <svg
+                                          className={`w-8 h-8 ${
+                                            star <= rating
+                                              ? "text-yellow-400 fill-current"
+                                              : "text-gray-300"
+                                          }`}
+                                          fill="none"
+                                          stroke="currentColor"
+                                          viewBox="0 0 24 24"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                          />
+                                        </svg>
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <textarea
+                                    value={feedbackText}
+                                    onChange={(e) =>
+                                      setFeedbackText(e.target.value)
+                                    }
+                                    placeholder="Share your feedback (optional)"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm"
+                                    rows={3}
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() =>
+                                      handleSubmitFeedback(token.id)
+                                    }
+                                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
+                                  >
+                                    Submit Feedback
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setFeedbackToken(null);
+                                      setRating(0);
+                                      setFeedbackText("");
+                                    }}
+                                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium text-sm"
+                                  >
+                                    Cancel
+                                  </button>
                                 </div>
                               </div>
-                              <div>
-                                <textarea
-                                  value={feedbackText}
-                                  onChange={(e) => setFeedbackText(e.target.value)}
-                                  placeholder="Share your feedback (optional)"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm"
-                                  rows={3}
-                                />
-                              </div>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={() => handleSubmitFeedback(token.id)}
-                                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
+                            ) : (
+                              <button
+                                onClick={() => setFeedbackToken(token.id)}
+                                className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition font-medium text-sm flex items-center justify-center gap-2"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
                                 >
-                                  Submit Feedback
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setFeedbackToken(null);
-                                    setRating(0);
-                                    setFeedbackText("");
-                                  }}
-                                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium text-sm"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button
-                              onClick={() => setFeedbackToken(token.id)}
-                              className="w-full px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition font-medium text-sm flex items-center justify-center gap-2"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                              </svg>
-                              Give Feedback
-                            </button>
-                          )}
-                        </div>
-                      )}
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                                  />
+                                </svg>
+                                Give Feedback
+                              </button>
+                            )}
+                          </div>
+                        )}
 
                       {/* Additional Info */}
                       <div className="flex flex-wrap gap-2 mt-2">
                         {token.priority && (
                           <div className="flex items-center gap-1">
-                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            <svg
+                              className="w-4 h-4 text-gray-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 10V3L4 14h7v7l9-11h-7z"
+                              />
                             </svg>
                             <span
                               className={`px-2 py-1 rounded-lg text-xs font-semibold border ${getPriorityColor(
@@ -345,7 +445,7 @@ export default function Page() {
                             </span>
                           </div>
                         )}
-                        {/* {token.estimatedWaitTime !== undefined && (
+                         {token.estimatedWaitTime !== undefined &&activeTab === "current" && (
                           <div className="flex items-center gap-1">
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -354,7 +454,7 @@ export default function Page() {
                               ~{token.estimatedWaitTime} min
                             </span>
                           </div>
-                        )} */}
+                        )} 
                       </div>
                     </div>
                   </div>
@@ -376,8 +476,18 @@ export default function Page() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
             <span className="text-xs font-medium">Current</span>
             {currentTokens.length > 0 && (
@@ -394,8 +504,18 @@ export default function Page() {
                 : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
             </svg>
             <span className="text-xs font-medium">History</span>
             {historyTokens.length > 0 && (
