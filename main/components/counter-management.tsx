@@ -55,8 +55,13 @@ import {
   createCounterAction,
   updateCounterAction,
   deleteCounterAction,
+  getCounterCategoryAction,
 } from "@/lib/counter-actions";
-import type { Counter as PrismaCounter, User } from "@prisma/client";
+import type {
+  Counter as PrismaCounter,
+  User,
+  CounterCategory,
+} from "@prisma/client";
 import { type CounterFormData } from "@/lib/helpers";
 import { getDoctorsAction, type UserWithStats } from "@/lib/user-actions";
 
@@ -67,6 +72,7 @@ type Counter = PrismaCounter & {
 
 const CounterManagement = () => {
   const [counters, setCounters] = useState<Counter[]>([]);
+  const [categories, setCategories] = useState<CounterCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -77,6 +83,7 @@ const CounterManagement = () => {
     location: "",
     status: "ACTIVE",
     assignedUserId: "",
+    categoryId: "",
   });
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
@@ -85,7 +92,19 @@ const CounterManagement = () => {
   useEffect(() => {
     loadCounters();
     loadDoctors();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    try {
+      const result = await getCounterCategoryAction();
+      if (result.success && result.data) {
+        setCategories(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading categories:", error);
+    }
+  };
 
   const loadDoctors = async () => {
     try {
@@ -103,6 +122,7 @@ const CounterManagement = () => {
       setLoading(true);
       startTransition(async () => {
         const result = await getAllCountersAction();
+        console.log("counters", result.data);
         if (result.success && result.data) {
           setCounters(result.data);
         } else {
@@ -138,6 +158,7 @@ const CounterManagement = () => {
       location: "",
       status: "ACTIVE",
       assignedUserId: "",
+      categoryId: "",
     });
   };
 
@@ -152,6 +173,9 @@ const CounterManagement = () => {
         formDataObj.append("status", formData.status);
         if (formData.assignedUserId) {
           formDataObj.append("assignedUserId", formData.assignedUserId);
+        }
+        if (formData.categoryId) {
+          formDataObj.append("categoryId", formData.categoryId);
         }
 
         const result = await createCounterAction(formDataObj);
@@ -190,6 +214,7 @@ const CounterManagement = () => {
       location: counter.location || "",
       status: counter.status as any,
       assignedUserId: counter.assignedUserId || "",
+      categoryId: counter.categoryId || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -207,8 +232,14 @@ const CounterManagement = () => {
         if (formData.assignedUserId) {
           formDataObj.append("assignedUserId", formData.assignedUserId);
         }
+        if (formData.categoryId) {
+          formDataObj.append("categoryId", formData.categoryId);
+        }
 
-        const result = await updateCounterAction(editingCounter.id, formDataObj);
+        const result = await updateCounterAction(
+          editingCounter.id,
+          formDataObj
+        );
 
         if (result.success) {
           await loadCounters();
@@ -238,7 +269,10 @@ const CounterManagement = () => {
     }
   };
 
-  const handleDeleteCounter = async (counterId: string, counterName: string) => {
+  const handleDeleteCounter = async (
+    counterId: string,
+    counterName: string
+  ) => {
     try {
       startTransition(async () => {
         const result = await deleteCounterAction(counterId);
@@ -269,15 +303,17 @@ const CounterManagement = () => {
   };
 
   const handleInputChange =
-    (field: keyof CounterFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof CounterFormData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
-  const handleSelectChange = (field: keyof CounterFormData) => (value: string) => {
-    const finalValue = value === "none" ? "" : value;
-    setFormData((prev) => ({ ...prev, [field]: finalValue as any }));
-  };
+  const handleSelectChange =
+    (field: keyof CounterFormData) => (value: string) => {
+      const finalValue = value === "none" ? "" : value;
+      setFormData((prev) => ({ ...prev, [field]: finalValue as any }));
+    };
 
   const CounterForm = ({
     isEdit = false,
@@ -328,6 +364,27 @@ const CounterManagement = () => {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="categoryId">Category</Label>
+        <Select
+          value={formData.categoryId}
+          onValueChange={handleSelectChange("categoryId")}
+          disabled={isPending}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a category" />
+          </SelectTrigger>
+          <SelectContent>
+            {/* <SelectItem value="none">None</SelectItem> */}
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="assignedUserId">Assign User</Label>
         <Select
           value={formData.assignedUserId}
@@ -338,7 +395,7 @@ const CounterManagement = () => {
             <SelectValue placeholder="Select a doctor" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
+            {/* <SelectItem value="none">None</SelectItem> */}
             {doctors.map((doctor) => (
               <SelectItem key={doctor.id} value={doctor.id}>
                 {doctor.name}
@@ -395,7 +452,10 @@ const CounterManagement = () => {
             Refresh
           </Button>
 
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog
+            open={isCreateDialogOpen}
+            onOpenChange={setIsCreateDialogOpen}
+          >
             <DialogTrigger asChild>
               <Button onClick={resetForm}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -510,11 +570,15 @@ const CounterManagement = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                           {counter.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.location || "-"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {counter.location || "-"}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <Badge>{counter.status}</Badge>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.category?.name || "-"}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {counter.category?.name || "-"}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {counter.assignedUser?.name || "-"}
                         </td>
@@ -540,17 +604,23 @@ const CounterManagement = () => {
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Counter</AlertDialogTitle>
+                                  <AlertDialogTitle>
+                                    Delete Counter
+                                  </AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Are you sure you want to delete {counter.name}?
-                                    This action cannot be undone.
+                                    Are you sure you want to delete{" "}
+                                    {counter.name}? This action cannot be
+                                    undone.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() =>
-                                      handleDeleteCounter(counter.id, counter.name)
+                                      handleDeleteCounter(
+                                        counter.id,
+                                        counter.name
+                                      )
                                     }
                                   >
                                     Delete
