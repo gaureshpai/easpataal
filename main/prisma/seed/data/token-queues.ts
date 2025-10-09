@@ -11,6 +11,7 @@ export const tokenQueues: Omit<TokenQueue, 'id' | 'createdAt' | 'updatedAt' | 'd
     calledAt: null,
     completedAt: null,
     feedback: null,
+    rating: null,
   },
   {
     tokenNumber: 102,
@@ -22,6 +23,7 @@ export const tokenQueues: Omit<TokenQueue, 'id' | 'createdAt' | 'updatedAt' | 'd
     calledAt: new Date('2025-10-09T09:05:00Z'),
     completedAt: null,
     feedback: null,
+    rating: null,
   },
   {
     tokenNumber: 103,
@@ -33,6 +35,7 @@ export const tokenQueues: Omit<TokenQueue, 'id' | 'createdAt' | 'updatedAt' | 'd
     calledAt: new Date('2025-10-09T09:10:00Z'),
     completedAt: new Date('2025-10-09T09:28:00Z'),
     feedback: 'Great service!',
+    rating: 5,
   },
   {
     tokenNumber: 104,
@@ -44,6 +47,7 @@ export const tokenQueues: Omit<TokenQueue, 'id' | 'createdAt' | 'updatedAt' | 'd
     calledAt: null,
     completedAt: null,
     feedback: 'Had to leave early.',
+    rating: null,
   },
   {
     tokenNumber: 105,
@@ -55,5 +59,6 @@ export const tokenQueues: Omit<TokenQueue, 'id' | 'createdAt' | 'updatedAt' | 'd
     calledAt: null,
     completedAt: null,
     feedback: null,
+    rating: null,
   },
 ];

@@ -67,7 +67,157 @@ import { useToast } from "@/hooks/use-toast";
 import { roles, type UserFormData } from "@/lib/helpers";
 import { getDepartmentOptions } from "@/lib/department-actions";
 
-const UserCRUDPage = () => {
+const UserForm = ({
+  isEdit = false,
+  onSubmit,
+  formData,
+  handleInputChange,
+  handleSelectChange,
+  isPending,
+  departments,
+  setIsEditDialogOpen,
+  setIsCreateDialogOpen,
+}: {
+  isEdit?: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  formData: UserFormData;
+  handleInputChange: (
+    field: keyof UserFormData
+  ) => (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: (field: keyof UserFormData) => (value: string) => void;
+  isPending: boolean;
+  departments: string[];
+  setIsEditDialogOpen: (isOpen: boolean) => void;
+  setIsCreateDialogOpen: (isOpen: boolean) => void;
+}) => (
+  <form onSubmit={onSubmit} className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="username">Username *</Label>
+        <Input
+          id="username"
+          value={formData.username}
+          onChange={handleInputChange("username")}
+          placeholder="Enter username"
+          disabled={isEdit || isPending}
+          required
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">Full Name *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={handleInputChange("name")}
+          placeholder="Enter full name"
+          disabled={isPending}
+          required
+        />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange("email")}
+          placeholder="Enter email address"
+          disabled={isPending}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="password">Password {!isEdit && "*"}</Label>
+        <Input
+          id="password"
+          type="password"
+          value={formData.password}
+          onChange={handleInputChange("password")}
+          placeholder={
+            isEdit ? "Leave blank to keep current password" : "Enter password"
+          }
+          disabled={isPending}
+          required={!isEdit}
+        />
+      </div>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div className="space-y-2">
+        <Label htmlFor="role">Role *</Label>
+        <Select
+          value={formData.role}
+          onValueChange={handleSelectChange("role")}
+          disabled={isPending}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select role" />
+          </SelectTrigger>
+          <SelectContent>
+            {roles.map((role) => (
+              <SelectItem key={role} value={role}>
+                {role}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="department">Department</Label>
+        <Select
+          value={formData.department}
+          onValueChange={handleSelectChange("department")}
+          disabled={isPending}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select department" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None</SelectItem>
+            {departments.map((dept) => (
+              <SelectItem key={dept} value={dept}>
+                {dept}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+
+    <div className="flex justify-end space-x-2 pt-4">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => {
+          if (isEdit) {
+            setIsEditDialogOpen(false);
+          } else {
+            setIsCreateDialogOpen(false);
+          }
+        }}
+        disabled={isPending}
+      >
+        Cancel
+      </Button>
+      <Button type="submit" disabled={isPending}>
+        {isPending ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            {isEdit ? "Updating..." : "Creating..."}
+          </>
+        ) : isEdit ? (
+          "Update User"
+        ) : (
+          "Create User"
+        )}
+      </Button>
+    </div>
+  </form>
+);
+
+const UserManagementPage = () => {
   const [users, setUsers] = useState<UserWithStats[]>([]);
   const [departments, setDepartments] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,18 +255,16 @@ const UserCRUDPage = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      startTransition(async () => {
-        const result = await getAllUsersAction();
-        if (result.success && result.data) {
-          setUsers(result.data);
-        } else {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to load users",
-            variant: "destructive",
-          });
-        }
-      });
+      const result = await getAllUsersAction();
+      if (result.success && result.data) {
+        setUsers(result.data);
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to load users",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error loading users:", error);
       toast({
@@ -187,6 +335,15 @@ const UserCRUDPage = () => {
       toast({
         title: "Validation Error",
         description: "Role is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (formData.role === "DOCTOR" && !formData.department) {
+      toast({
+        title: "Validation Error",
+        description: "Department is required for doctors",
         variant: "destructive",
       });
       return false;
@@ -415,140 +572,6 @@ const UserCRUDPage = () => {
       : "bg-red-100 text-red-800";
   };
 
-  const UserForm = ({
-    isEdit = false,
-    onSubmit,
-  }: {
-    isEdit?: boolean;
-    onSubmit: (e: React.FormEvent) => void;
-  }) => (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="username">Username *</Label>
-          <Input
-            id="username"
-            value={formData.username}
-            onChange={handleInputChange("username")}
-            placeholder="Enter username"
-            disabled={isEdit || isPending}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name *</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={handleInputChange("name")}
-            placeholder="Enter full name"
-            disabled={isPending}
-            required
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange("email")}
-            placeholder="Enter email address"
-            disabled={isPending}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password {!isEdit && "*"}</Label>
-          <Input
-            id="password"
-            type="password"
-            value={formData.password}
-            onChange={handleInputChange("password")}
-            placeholder={
-              isEdit ? "Leave blank to keep current password" : "Enter password"
-            }
-            disabled={isPending}
-            required={!isEdit}
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="role">Role *</Label>
-          <Select
-            value={formData.role}
-            onValueChange={handleSelectChange("role")}
-            disabled={isPending}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select role" />
-            </SelectTrigger>
-            <SelectContent>
-              {roles.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {role}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="department">Department</Label>
-          <Select
-            value={formData.department}
-            onValueChange={handleSelectChange("department")}
-            disabled={isPending}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select department" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">None</SelectItem>
-              {departments.map((dept) => (
-                <SelectItem key={dept} value={dept}>
-                  {dept}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => {
-            if (isEdit) {
-              setIsEditDialogOpen(false);
-            } else {
-              setIsCreateDialogOpen(false);
-            }
-          }}
-          disabled={isPending}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              {isEdit ? "Updating..." : "Creating..."}
-            </>
-          ) : isEdit ? (
-            "Update User"
-          ) : (
-            "Create User"
-          )}
-        </Button>
-      </div>
-    </form>
-  );
-
   return (
     <AuthGuard
       allowedRoles={["ADMIN"]}
@@ -587,7 +610,16 @@ const UserCRUDPage = () => {
                   Add a new user to the hospital management system.
                 </DialogDescription>
               </DialogHeader>
-              <UserForm onSubmit={handleCreateUser} />
+              <UserForm
+                onSubmit={handleCreateUser}
+                formData={formData}
+                handleInputChange={handleInputChange}
+                handleSelectChange={handleSelectChange}
+                isPending={isPending}
+                departments={departments}
+                setIsEditDialogOpen={setIsEditDialogOpen}
+                setIsCreateDialogOpen={setIsCreateDialogOpen}
+              />
             </DialogContent>
           </Dialog>
         </div>
@@ -623,7 +655,7 @@ const UserCRUDPage = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.byRole?.NURSE ||
+              {stats?.byRole?.RECEPTIONIST ||
                 users.filter((u) => u.role === "RECEPTIONIST").length}
             </div>
           </CardContent>
@@ -660,139 +692,137 @@ const UserCRUDPage = () => {
           </div>
           <div className="rounded-md border overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Username
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Department
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.email || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Badge className={getRoleBadgeColor(user.role)}>
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.department || "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <Badge className={getStatusBadgeColor(user.status)}>
-                          {user.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEditUser(user)}
-                            disabled={isPending}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleToggleStatus(user.id, user.status)
-                            }
-                            disabled={isPending}
-                          >
-                            {user.status === "ACTIVE" ? (
-                              <UserX className="h-4 w-4 text-orange-600" />
-                            ) : (
-                              <UserCheck className="h-4 w-4 text-green-600" />
-                            )}
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={isPending}
-                              >
-                                <Trash2 className="h-4 w-4 text-red-600" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete User</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete {user.name}?
-                                  This action cannot be undone. If the user has
-                                  associated data, they will be deactivated
-                                  instead.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() =>
-                                    handleDeleteUser(user.id, user.name)
-                                  }
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </td>
+              {loading ? (
+                <div className="text-center py-8 text-gray-500">
+                  <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p>Loading users...</p>
+                  <p className="text-gray-600">
+                    Please wait while we fetch the user data.
+                  </p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  {searchTerm
+                    ? "No users found matching your search."
+                    : "No users found."}
+                </div>
+              ) : (
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Username
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Role
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Department
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {user.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.email || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <Badge className={getRoleBadgeColor(user.role)}>
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.department || "-"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <Badge className={getStatusBadgeColor(user.status)}>
+                            {user.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditUser(user)}
+                              disabled={isPending}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                handleToggleStatus(user.id, user.status)
+                              }
+                              disabled={isPending}
+                            >
+                              {user.status === "ACTIVE" ? (
+                                <UserX className="h-4 w-4 text-orange-600" />
+                              ) : (
+                                <UserCheck className="h-4 w-4 text-green-600" />
+                              )}
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={isPending}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete User</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete {user.name}?
+                                    This action cannot be undone. If the user has
+                                    associated data, they will be deactivated
+                                    instead.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() =>
+                                      handleDeleteUser(user.id, user.name)
+                                    }
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
-
-          {loading || filteredUsers.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p>Loading users...</p>
-              <p className="text-gray-600">
-                Please wait while we fetch the user data.
-              </p>
-            </div>
-          ) : (
-            filteredUsers.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                {searchTerm
-                  ? "No users found matching your search."
-                  : "No users found."}
-              </div>
-            )
-          )}
         </CardContent>
       </Card>
 
@@ -804,11 +834,21 @@ const UserCRUDPage = () => {
               Update user information and permissions.
             </DialogDescription>
           </DialogHeader>
-          <UserForm isEdit={true} onSubmit={handleUpdateUser} />
+          <UserForm
+            isEdit={true}
+            onSubmit={handleUpdateUser}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSelectChange={handleSelectChange}
+            isPending={isPending}
+            departments={departments}
+            setIsEditDialogOpen={setIsEditDialogOpen}
+            setIsCreateDialogOpen={setIsCreateDialogOpen}
+          />
         </DialogContent>
       </Dialog>
     </AuthGuard>
   );
 };
 
-export default UserCRUDPage;
+export default UserManagementPage;

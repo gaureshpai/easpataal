@@ -149,13 +149,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-black p-2 rounded-md">
+            <div className="bg-white p-2 rounded-md">
               <Image
                 src="/logo.png"
                 alt="Logo"
-                width={24}
-                height={24}
-                className="invert"
+                width={64}
+                height={64}
+                className="rounded-full"
               />
             </div>
           </div>
@@ -224,7 +224,7 @@ export default function LoginPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-0 top-0 h-full px-3 py-2 cursor-pointer hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
                 >
@@ -242,7 +242,7 @@ export default function LoginPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   disabled={isLoading}
                 >
                   <TestTube className="h-4 w-4 mr-2" />
@@ -333,17 +333,6 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-
-          <div className="mt-6 text-center">
-            <div className="text-sm text-gray-600">
-              <p className="font-medium">
-                Don't have an account?{" "}
-                <a href="/signup" className="text-blue-600 hover:underline">
-                  Sign up
-                </a>
-              </p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>

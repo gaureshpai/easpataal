@@ -1,6 +1,10 @@
 import { Department } from '@prisma/client';
 
-export const departments: Omit<Department, 'id' | 'createdAt' | 'updatedAt'>[] = [
+export const departments: Omit<Department, 'id'>[] = [
+  {
+    name: 'None',
+    status: 'ACTIVE',
+  },
   {
     name: 'Cardiology',
     description: 'Deals with disorders of the heart.',

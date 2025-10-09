@@ -10,8 +10,6 @@ export interface TokenQueueData {
   patientId: string;
   patientName: string;
   displayName: string | null;
-  departmentId: string;
-  departmentName: string;
   status: "WAITING" | "CALLED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   priority: "NORMAL" | "URGENT";
   estimatedWaitTime: number;
@@ -28,7 +26,6 @@ export interface TokenQueueStats {
   inProgressTokens: number;
   completedTokens: number;
   averageWaitTime: number;
-  byDepartment: Record<string, number>;
   byPriority: Record<string, number>;
 }
 
@@ -45,7 +42,11 @@ export async function getAllActiveTokensAction(): Promise<
     const tokens = await prisma.tokenQueue.findMany({
       include: {
         patient: true,
-        department: true,
+        counter: {
+          include: {
+            department: true,
+          },
+        },
       },
       orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
     });
@@ -55,9 +56,12 @@ export async function getAllActiveTokensAction(): Promise<
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
-      departmentId: token.departmentId,
-      departmentName: token.department.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
+      departmentId: token.counter?.departmentId || "N/A",
+      departmentName: token.counter?.department?.name || "N/A",
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -90,7 +94,6 @@ export async function getTokenQueueByDepartmentAction(
       },
       include: {
         patient: true,
-        department: true,
       },
       orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
     });
@@ -100,9 +103,10 @@ export async function getTokenQueueByDepartmentAction(
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
-      departmentId: token.departmentId,
-      departmentName: token.department.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -127,37 +131,107 @@ export async function createTokenAction(
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
     const patientId = formData.get("patientId") as string;
-    const patientName = formData.get("patientName") as string;
-    const departmentId = formData.get("departmentId") as string;
+    const counterCategoryId = formData.get("counterId") as string;
     const priority =
-      ((formData.get("priority") as string)?.toUpperCase() as "NORMAL" | "URGENT") || "NORMAL";
+      ((formData.get("priority") as string)?.toUpperCase() as
+        | "NORMAL"
+        | "URGENT") || "NORMAL";
 
-    if (!patientId || !patientName || !departmentId) {
+    if (!patientId || !counterCategoryId) {
       return { success: false, error: "Required fields are missing" };
     }
 
-    const department = await prisma.department.findUnique({
-      where: { id: departmentId },
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { name: true },
     });
 
-    if (!department) {
-      return { success: false, error: "Department not found" };
+    if (!patient) {
+      return { success: false, error: "Patient not found" };
+    }
+
+    const patientName = patient.name;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const counters = await prisma.counter.findMany({
+      where: {
+        categoryId: counterCategoryId,
+        status: "ACTIVE",
+      },
+      include: {
+        tokens: {
+          where: {
+            createdAt: { gte: today },
+            status: { in: ["WAITING", "CALLED", "COMPLETED"] },
+          },
+          select: {
+            status: true,
+            actualWaitTime: true,
+          },
+        },
+      },
+    });
+
+    if (counters.length === 0) {
+      return {
+        success: false,
+        error: "No active counters found for this category",
+      };
+    }
+
+    let bestCounterId: string | null = null;
+    let minWaitingTimeScore = Infinity;
+
+    for (const counter of counters) {
+      const waitingTokens = counter.tokens.filter(
+        (token) => token.status === "WAITING" || token.status === "CALLED"
+      ).length;
+
+      const completedTokensToday = counter.tokens.filter(
+        (token) => token.status === "COMPLETED" && token.actualWaitTime !== null
+      );
+
+      const totalActualWaitTime = completedTokensToday.reduce(
+        (sum, token) => sum + (token.actualWaitTime || 0),
+        0
+      );
+
+      const averageWaitTime =
+        completedTokensToday.length > 0
+          ? totalActualWaitTime / completedTokensToday.length
+          : 15; // Default to 15 minutes if no completed tokens today
+
+      const waitingTimeScore = averageWaitTime * waitingTokens;
+
+      if (waitingTimeScore < minWaitingTimeScore) {
+        minWaitingTimeScore = waitingTimeScore;
+        bestCounterId = counter.id;
+      }
+    }
+
+    if (!bestCounterId) {
+      return { success: false, error: "Could not assign a counter" };
     }
 
     const tokenCount = await prisma.tokenQueue.count({
       where: {
         createdAt: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          gte: today,
         },
       },
     });
 
     const tokenNumber = tokenCount + 1;
-    const displayName = generateDisplayName(patientName, tokenNumber.toString());
+    const displayName = generateDisplayName(
+      patientName,
+      tokenNumber.toString()
+    );
 
     const queueLength = await prisma.tokenQueue.count({
       where: {
-        departmentId,
+        counterId: bestCounterId,
         status: { in: ["WAITING", "CALLED"] },
       },
     });
@@ -167,15 +241,19 @@ export async function createTokenAction(
       data: {
         tokenNumber,
         patientId,
-        patientName,
-        departmentId,
+        counterId: bestCounterId,
         priority,
         estimatedWaitTime,
         status: "WAITING",
       },
       include: {
         patient: true,
-        department: true,
+        counter: {
+          include: {
+            category: true,
+            department: true,
+          },
+        },
       },
     });
 
@@ -185,8 +263,6 @@ export async function createTokenAction(
       patientId: token.patientId,
       patientName: token.patient.name,
       displayName,
-      departmentId: token.departmentId,
-      departmentName: token.department.name,
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -197,7 +273,7 @@ export async function createTokenAction(
       completedAt: token.completedAt,
     };
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: tokenData };
@@ -238,7 +314,6 @@ export async function updateTokenStatusAction(
       data: updateData,
       include: {
         patient: true,
-        department: true,
       },
     });
 
@@ -247,9 +322,10 @@ export async function updateTokenStatusAction(
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
-      departmentId: token.departmentId,
-      departmentName: token.department.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -260,7 +336,7 @@ export async function updateTokenStatusAction(
       completedAt: token.completedAt,
     };
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: tokenData };
@@ -278,7 +354,7 @@ export async function cancelTokenAction(
   try {
     await updateTokenStatusAction(tokenId, "CANCELLED");
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: true };
@@ -303,13 +379,16 @@ export async function getTokenQueueStatsAction(): Promise<
           gte: today,
         },
       },
-      include: { department: true },
     });
 
     const totalTokens = tokens.length;
     const waitingTokens = tokens.filter((t) => t.status === "WAITING").length;
-    const inProgressTokens = tokens.filter((t) => t.status === "WAITING").length;
-    const completedTokens = tokens.filter((t) => t.status === "COMPLETED").length;
+    const inProgressTokens = tokens.filter(
+      (t) => t.status === "WAITING"
+    ).length;
+    const completedTokens = tokens.filter(
+      (t) => t.status === "COMPLETED"
+    ).length;
 
     const completedWithWaitTime = tokens.filter(
       (t) => t.status === "COMPLETED" && t.actualWaitTime !== null
@@ -322,11 +401,6 @@ export async function getTokenQueueStatsAction(): Promise<
           ) / completedWithWaitTime.length
         : 0;
 
-    const byDepartment = tokens.reduce((acc, token) => {
-      acc[token.department.name] = (acc[token.department.name] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
     const byPriority = tokens.reduce((acc, token) => {
       acc[token.priority] = (acc[token.priority] || 0) + 1;
       return acc;
@@ -338,7 +412,6 @@ export async function getTokenQueueStatsAction(): Promise<
       inProgressTokens,
       completedTokens,
       averageWaitTime,
-      byDepartment,
       byPriority,
     };
 

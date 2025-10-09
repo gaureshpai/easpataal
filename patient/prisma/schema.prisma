@@ -22,9 +22,10 @@ model User {
   updatedAt DateTime   @updatedAt
 
   // Relations
-  appointments  Appointment[]
-  prescriptions Prescription[]
-  counters      Counter[]      @relation("UserCounters")
+  appointments             Appointment[]
+  prescriptions            Prescription[]
+  counters                 Counter[]                  @relation("UserCounters")
+  NotificationSubscription NotificationSubscription[]
 
   @@map("users")
 }
@@ -41,7 +42,7 @@ model Patient {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   allergies        String[]
-  bloodType        BloodType     @default(O_POS)
+  bloodType        BloodType
   emergencyContact String?       @db.VarChar(100)
   emergencyPhone   String?       @db.VarChar(20)
   medicalHistory   Json?         @default("[]")
@@ -59,7 +60,6 @@ model Patient {
 model CounterCategory {
   id           String      @id @default(cuid())
   name         String      @unique
-  description  String?
   department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
   counters     Counter[]
@@ -92,8 +92,6 @@ model TokenQueue {
   id                String             @id @default(cuid())
   tokenNumber       Int
   patientId         String
-  patientName       String
-  departmentId      String
   counterId         String?
   status            TokenQueueStatus   @default(WAITING)
   priority          TokenQueuePriority @default(NORMAL)
@@ -108,9 +106,8 @@ model TokenQueue {
   updatedAt DateTime @updatedAt
 
   // Relations
-  department Department @relation(fields: [departmentId], references: [id])
-  patient    Patient    @relation(fields: [patientId], references: [id])
-  counter    Counter?   @relation(fields: [counterId], references: [id])
+  patient Patient  @relation(fields: [patientId], references: [id])
+  counter Counter? @relation(fields: [counterId], references: [id])
 
   @@map("token_queue")
 }
@@ -118,20 +115,7 @@ model TokenQueue {
 model Department {
   id               String           @id @default(cuid())
   name             String           @unique
-  description      String
-  location         String
-  contactNumber    String?
-  email            String?
-  operatingHours   String           @default("24/7")
   status           DepartmentStatus @default(ACTIVE)
-  capacity         Int              @default(50)
-  currentOccupancy Int              @default(0)
-  specializations  String[]         @default([])
-  equipment        String[]         @default([])
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
-  tokenQueue        TokenQueue[]
   counters          Counter[]
   counterCategories CounterCategory[]
 
@@ -204,6 +188,14 @@ model DrugInventory {
   prescriptionItems PrescriptionItem[]
 
   @@map("drug_inventory")
+}
+
+model NotificationSubscription {
+  id           String @id @default(cuid())
+  userId       String @unique
+  subscription Json
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 enum Role {

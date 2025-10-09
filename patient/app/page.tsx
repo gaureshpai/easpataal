@@ -9,7 +9,7 @@ export default function Page() {
   const [profiles, setProfiles] = useState<Patient[]>([]);
   const [tokens, setTokens] = useState<
     Prisma.TokenQueueGetPayload<{
-      include: { department: true; patient: true };
+      include: { patient: true };
     }>[]
   >([]);
   const [loading, setLoading] = useState(false);
@@ -28,27 +28,56 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(() => {
+    const check = () => {
+      if (!('serviceWorker' in navigator)) {
+        throw new Error('No Service Worker support!')
+      }
+      if (!('PushManager' in window)) {
+        throw new Error('No Push API Support!')
+      }
+    }
+    const registerServiceWorker = async () => {
+      const swRegistration = await navigator.serviceWorker.register('/service.js')
+      return swRegistration
+    }
+    const requestNotificationPermission = async () => {
+      const permission = await window.Notification.requestPermission()
+      console.log(permission)
+      if (permission !== 'granted') {
+        throw new Error('Permission not granted for Notification')
+      }
+    }
+    const main = async () => {
+      check()
+      const swRegistration = await registerServiceWorker()
+      console.log(swRegistration)
+      const permission = await requestNotificationPermission()
+    }
 
-  useEffect(()=>{
-    
-    if(selectedProfile===null){
+    main();
+  }, [])
+
+  useEffect(() => {
+
+    if (selectedProfile === null) {
       return
     }
     let a = setInterval(async () => {
-        const fetchedTokens: Prisma.TokenQueueGetPayload<{
-        include: { department: true; patient: true };
+      const fetchedTokens: Prisma.TokenQueueGetPayload<{
+        include: { patient: true };
       }>[] = await getTokenByPatientId(selectedProfile);
       setTokens(fetchedTokens);
-      },10000)
+    }, 10000)
     return () => clearInterval(a);
-  },[selectedProfile])
+  }, [selectedProfile])
 
   const handleProfileSelect = async (profileId: string) => {
     setSelectedProfile(profileId);
     setLoading(true);
     try {
       const fetchedTokens: Prisma.TokenQueueGetPayload<{
-        include: { department: true; patient: true };
+        include: { patient: true };
       }>[] = await getTokenByPatientId(profileId);
       setTokens(fetchedTokens);
     } catch (error) {
@@ -68,12 +97,12 @@ export default function Page() {
   };
 
   const handleSubmitFeedback = async (tokenId: string) => {
-      await pushFeedback({tokenid:tokenId,feedback:feedbackText,rating:rating});
+    await pushFeedback({ tokenid: tokenId, feedback: feedbackText, rating: rating });
     // Reset feedback state
     setFeedbackToken(null);
     setRating(0);
     setFeedbackText("");
-    
+
   };
 
   const getStatusColor = (status: string) => {
@@ -106,7 +135,7 @@ export default function Page() {
   const calculatePeopleAhead = (currentToken: any) => {
     const sameQueueTokens = tokens.filter(
       (t) =>
-        t.department.id === currentToken.department.id &&
+        // t.department.id === currentToken.department.id &&
         (t.status === "WAITING" || t.status === "CALLED") &&
         t.id !== currentToken.id
     );
@@ -288,15 +317,7 @@ export default function Page() {
                             Patient Name
                           </p>
                           <p className="font-semibold text-gray-800">
-                            {token.patientName}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">
-                            Department
-                          </p>
-                          <p className="font-semibold text-gray-800">
-                            {token.department.name}
+                            {token.patient.name}
                           </p>
                         </div>
                       </div>
@@ -348,11 +369,10 @@ export default function Page() {
                                         className="focus:outline-none transition-transform hover:scale-110"
                                       >
                                         <svg
-                                          className={`w-8 h-8 ${
-                                            star <= rating
+                                          className={`w-8 h-8 ${star <= rating
                                               ? "text-yellow-400 fill-current"
                                               : "text-gray-300"
-                                          }`}
+                                            }`}
                                           fill="none"
                                           stroke="currentColor"
                                           viewBox="0 0 24 24"
@@ -450,7 +470,7 @@ export default function Page() {
                             </span>
                           </div>
                         )}
-                         {token.estimatedWaitTime !== undefined &&activeTab === "current" && (
+                        {token.estimatedWaitTime !== undefined && activeTab === "current" && (
                           <div className="flex items-center gap-1">
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -459,7 +479,7 @@ export default function Page() {
                               ~{token.estimatedWaitTime} min
                             </span>
                           </div>
-                        )} 
+                        )}
                       </div>
                     </div>
                   </div>
@@ -475,11 +495,10 @@ export default function Page() {
         <div className="max-w-2xl mx-auto flex">
           <button
             onClick={() => setActiveTab("current")}
-            className={`flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all ${
-              activeTab === "current"
+            className={`flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all ${activeTab === "current"
                 ? "text-purple-600 border-t-2 border-purple-600"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <svg
               className="w-6 h-6"
@@ -503,11 +522,10 @@ export default function Page() {
           </button>
           <button
             onClick={() => setActiveTab("history")}
-            className={`flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all ${
-              activeTab === "history"
+            className={`flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all ${activeTab === "history"
                 ? "text-purple-600 border-t-2 border-purple-600"
                 : "text-gray-500 hover:text-gray-700"
-            }`}
+              }`}
           >
             <svg
               className="w-6 h-6"
