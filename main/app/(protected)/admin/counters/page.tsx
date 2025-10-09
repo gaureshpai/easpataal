@@ -179,6 +179,9 @@ const CounterCRUDPage = () => {
         formDataObj.append("name", formData.name)
         formDataObj.append("location", formData.location)
         formDataObj.append("status", formData.status)
+        if (formData.assignedUserId) {
+          formDataObj.append("assignedUserId", formData.assignedUserId)
+        }
 
         const result = await updateCounterAction(editingCounter.id, formDataObj)
 
