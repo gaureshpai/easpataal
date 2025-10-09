@@ -22,9 +22,10 @@ model User {
   updatedAt DateTime   @updatedAt
 
   // Relations
-  appointments  Appointment[]
-  prescriptions Prescription[]
-  counters      Counter[]      @relation("UserCounters")
+  appointments             Appointment[]
+  prescriptions            Prescription[]
+  counters                 Counter[]                  @relation("UserCounters")
+  NotificationSubscription NotificationSubscription[]
 
   @@map("users")
 }
@@ -188,6 +189,14 @@ model DrugInventory {
   prescriptionItems PrescriptionItem[]
 
   @@map("drug_inventory")
+}
+
+model NotificationSubscription {
+  id           String @id @default(cuid())
+  userId       String @unique
+  subscription Json
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 enum Role {

@@ -56,7 +56,10 @@ export async function getAllActiveTokensAction(): Promise<
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
       departmentId: token.counter?.departmentId || "N/A",
       departmentName: token.counter?.department?.name || "N/A",
       status: token.status as TokenQueueData["status"],
@@ -90,7 +93,7 @@ export async function getTokenQueueByDepartmentAction(
         status: { in: ["WAITING", "CALLED"] },
       },
       include: {
-        patient: true
+        patient: true,
       },
       orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
     });
@@ -100,7 +103,10 @@ export async function getTokenQueueByDepartmentAction(
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -125,9 +131,11 @@ export async function createTokenAction(
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
     const patientId = formData.get("patientId") as string;
-    const counterCategoryId = formData.get("counterCategoryId") as string;
+    const counterCategoryId = formData.get("counterId") as string;
     const priority =
-      ((formData.get("priority") as string)?.toUpperCase() as "NORMAL" | "URGENT") || "NORMAL";
+      ((formData.get("priority") as string)?.toUpperCase() as
+        | "NORMAL"
+        | "URGENT") || "NORMAL";
 
     if (!patientId || !counterCategoryId) {
       return { success: false, error: "Required fields are missing" };
@@ -167,7 +175,10 @@ export async function createTokenAction(
     });
 
     if (counters.length === 0) {
-      return { success: false, error: "No active counters found for this category" };
+      return {
+        success: false,
+        error: "No active counters found for this category",
+      };
     }
 
     let bestCounterId: string | null = null;
@@ -213,7 +224,10 @@ export async function createTokenAction(
     });
 
     const tokenNumber = tokenCount + 1;
-    const displayName = generateDisplayName(patientName, tokenNumber.toString());
+    const displayName = generateDisplayName(
+      patientName,
+      tokenNumber.toString()
+    );
 
     const queueLength = await prisma.tokenQueue.count({
       where: {
@@ -259,7 +273,7 @@ export async function createTokenAction(
       completedAt: token.completedAt,
     };
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: tokenData };
@@ -308,7 +322,10 @@ export async function updateTokenStatusAction(
       tokenNumber: token.tokenNumber,
       patientId: token.patientId,
       patientName: token.patient.name,
-      displayName: generateDisplayName(token.patient.name, token.tokenNumber.toString()),
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
       status: token.status as TokenQueueData["status"],
       priority: token.priority as TokenQueueData["priority"],
       estimatedWaitTime: token.estimatedWaitTime,
@@ -319,7 +336,7 @@ export async function updateTokenStatusAction(
       completedAt: token.completedAt,
     };
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: tokenData };
@@ -337,7 +354,7 @@ export async function cancelTokenAction(
   try {
     await updateTokenStatusAction(tokenId, "CANCELLED");
 
-    revalidatePath("/receptionist/token-queue");
+    revalidatePath("/receptionist");
     revalidatePath("/display");
 
     return { success: true, data: true };
@@ -366,8 +383,12 @@ export async function getTokenQueueStatsAction(): Promise<
 
     const totalTokens = tokens.length;
     const waitingTokens = tokens.filter((t) => t.status === "WAITING").length;
-    const inProgressTokens = tokens.filter((t) => t.status === "WAITING").length;
-    const completedTokens = tokens.filter((t) => t.status === "COMPLETED").length;
+    const inProgressTokens = tokens.filter(
+      (t) => t.status === "WAITING"
+    ).length;
+    const completedTokens = tokens.filter(
+      (t) => t.status === "COMPLETED"
+    ).length;
 
     const completedWithWaitTime = tokens.filter(
       (t) => t.status === "COMPLETED" && t.actualWaitTime !== null
