@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import CounterCRUDPage from "@/components/admin-counters-client";
-
 import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CounterManagement from "@/components/counter-management";
 import CounterCategoryManagement from "@/components/counter-category-management";
 
-export default function CounterCRUDPage() {
+export default function page() {
   return (
     <AuthGuard allowedRoles={["ADMIN"]}>
       <Navbar />
