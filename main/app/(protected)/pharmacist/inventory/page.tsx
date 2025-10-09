@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
 import { getDrugInventoryAction } from "@/lib/pharmacist-actions"
 import InventoryClient from "@/components/inventory-client"
+
+export const metadata: Metadata = {
+  title: "Pharmacy Inventory - EASPATAAL",
+  description: "Manage drug inventory.",
+};
 
 export default async function InventoryPage() {
   const inventory = await getDrugInventoryAction()

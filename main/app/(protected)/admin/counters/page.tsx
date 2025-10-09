@@ -1,4 +1,5 @@
-"use client";
+import type { Metadata } from "next";
+import CounterCRUDPage from "@/components/admin-counters-client";
 
 import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
