@@ -17,7 +17,8 @@
     "next": "15.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "tailwind-merge": "^3.3.1"
+    "tailwind-merge": "^3.3.1",
+    "twilio": "^5.10.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

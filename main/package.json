@@ -38,6 +38,7 @@
     "react-dom": "19.1.0",
     "recharts": "^2.15.4",
     "tailwind-merge": "^3.3.1",
+    "twilio": "^5.10.2",
     "web-push": "^3.6.7"
   },
   "devDependencies": {

@@ -11,13 +11,29 @@ webpush.setVapidDetails(
   vapidKeys.privateKey
 );
 
-export async function sendNotification(subscription: webpush.PushSubscription, payload: any) {
+export async function sendNotification(
+  subscription: webpush.PushSubscription,
+  payload: any
+) {
   try {
-    await webpush.sendNotification(subscription, payload);
+    const payloadWithSound = {
+      ...JSON.parse(payload),
+      sound: "/Notification.mp3",
+      requireInteraction: true,
+      vibrate: [200, 100, 200],
+    };
+    await webpush.sendNotification(
+      subscription,
+      JSON.stringify(payloadWithSound)
+    );
     console.log("Web push notification sent successfully.");
   } catch (error) {
     console.error("Error sending web push notification:", error);
-    if (error instanceof Error && "statusCode" in error && error.statusCode === 410) {
+    if (
+      error instanceof Error &&
+      "statusCode" in error &&
+      error.statusCode === 410
+    ) {
       console.log("Subscription expired or no longer valid.");
     }
   }
