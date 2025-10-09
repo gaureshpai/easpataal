@@ -15,16 +15,16 @@ model User {
   password   String  @db.VarChar(255)
   role       Role
   department String?
-  counterId  String?
+  counterId  String? @unique
 
   status    UserStatus @default(ACTIVE)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 
   // Relations
-  appointments             Appointment[]
-  prescriptions            Prescription[]
-  counters                 Counter[]                  @relation("UserCounters")
+  appointments  Appointment[]
+  prescriptions Prescription[]
+  counter       Counter?       @relation("UserCounters", fields: [counterId], references: [id])
 
   @@map("users")
 }
@@ -82,7 +82,7 @@ model Counter {
   // Relations
   category     CounterCategory? @relation(fields: [categoryId], references: [id])
   department   Department?      @relation(fields: [departmentId], references: [id])
-  assignedUser User?            @relation("UserCounters", fields: [assignedUserId], references: [id])
+  assignedUser User?            @relation("UserCounters")
   tokens       TokenQueue[]
 
   @@map("counters")
@@ -192,7 +192,7 @@ model DrugInventory {
 
 model NotificationSubscription {
   id           String @id @default(cuid())
-  patientId       String @unique
+  patientId    String @unique
   subscription Json
 
   patient Patient @relation(fields: [patientId], references: [id])

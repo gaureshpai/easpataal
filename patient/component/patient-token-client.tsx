@@ -1,10 +1,14 @@
-"use client";
+"use client"
 
 import { getPatientsById, getTokenByPatientId, pushFeedback } from "@/lib/serverFunctions";
 import { Patient, Prisma } from "@prisma/client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from "next/navigation";
 
-export default function Page() {
+export default function PatientClient() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<Patient[]>([]);
   const [tokens, setTokens] = useState<
@@ -57,7 +61,17 @@ export default function Page() {
 
     main();
   }, [])
-
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if(id) {
+      const userIds = JSON.parse(localStorage.getItem("userId") || "[]");
+      if(!userIds.includes(id)) {
+        router.push('/');
+        return
+      }
+      setSelectedProfile(id);
+    }
+  },[])
   useEffect(() => {
 
     if (selectedProfile === null) {
@@ -74,6 +88,7 @@ export default function Page() {
 
   const handleProfileSelect = async (profileId: string) => {
     setSelectedProfile(profileId);
+    router.push(`/?id=${profileId}`);
     setLoading(true);
     try {
       const fetchedTokens: Prisma.TokenQueueGetPayload<{

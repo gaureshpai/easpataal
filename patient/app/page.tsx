@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from 'next/server'
 import PatientTokenClient from "@/component/patient-token-client";
 
 export const metadata: Metadata = {
@@ -6,6 +7,7 @@ export const metadata: Metadata = {
   description: "View your token information.",
 };
 
-export default function Page() {
+export default async function Page() {
+  await connection()
   return <PatientTokenClient />;
 }
