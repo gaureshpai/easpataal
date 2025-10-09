@@ -28,35 +28,6 @@ export default function Page() {
     }
   }, []);
 
-  useEffect(()=>{
-    const check = () => {
-  if (!('serviceWorker' in navigator)) {
-    throw new Error('No Service Worker support!')
-  }
-  if (!('PushManager' in window)) {
-    throw new Error('No Push API Support!')
-  }
-}
-const registerServiceWorker = async () => {
-  const swRegistration = await navigator.serviceWorker.register('/service.js')
-  return swRegistration
-}
-const requestNotificationPermission = async () => {
-  const permission = await window.Notification.requestPermission()
-  console.log(permission)
-  if (permission !== 'granted') {
-    throw new Error('Permission not granted for Notification')
-  }
-}
-const main = async () => {
-  check()
-  const swRegistration = await registerServiceWorker()
-  console.log(swRegistration)
-  const permission = await requestNotificationPermission()
-}
-
-main(); 
-  },[])
 
   useEffect(()=>{
     
