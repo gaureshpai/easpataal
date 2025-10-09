@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await fetch('/api/auth', {
       method: 'DELETE',
     });
-    router.push("/login");
+    router.push("/");
   };
 
   const value = {

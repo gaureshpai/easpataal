@@ -4,7 +4,7 @@ import prisma  from "@/lib/prisma"
 export async function GET() {
     try {
         const patients = await prisma.patient.findMany({
-            where: { status: "Active" },
+            where: { status: "ACTIVE" },
             select: {
                 id: true,
                 name: true,

@@ -46,7 +46,6 @@ import {
   updatePatientVitalsAction,
   refreshDashboardAction,
 } from "@/lib/receptionist-actions";
-import { EmergencyAlertsModal } from "./emergency-alerts-modal";
 import { getConditionColor, getSurgeryStatusColor } from "@/lib/functions";
 
 export default function ReceptionistDashboardContent({
@@ -56,15 +55,12 @@ export default function ReceptionistDashboardContent({
 }) {
   const { toast } = useToast();
   const [patients, setPatients] = useState(initialData.patients);
-  const [surgeries, setSurgeries] = useState(initialData.surgeries);
   const [tasks, setTasks] = useState(initialData.tasks);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isPatientDialogOpen, setIsPatientDialogOpen] = useState(false);
   const [isVitalsDialogOpen, setIsVitalsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentDate] = useState(new Date());
-  const [isEmergencyAlertsModalOpen, setIsEmergencyAlertsModalOpen] =
-    useState(false);
 
   const [patientForm, setPatientForm] = useState({
     name: "",
@@ -238,7 +234,6 @@ export default function ReceptionistDashboardContent({
   const criticalPatients = patients.filter(
     (p) => p.condition.toLowerCase() === "critical"
   );
-  const todaySurgeries = surgeries.filter((s) => s.status !== "cancelled");
 
   return (
     <>
@@ -269,16 +264,6 @@ export default function ReceptionistDashboardContent({
             />
             Refresh
           </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEmergencyAlertsModalOpen(true)}
-            className="text-red-600 hover:text-red-700 w-full sm:w-auto"
-          >
-            <AlertTriangle className="h-4 w-4 mr-1" />
-            Emergency Alerts
-          </Button>
         </div>
       </div>
 
@@ -304,22 +289,6 @@ export default function ReceptionistDashboardContent({
             <div className="text-2xl font-bold">{patients.length}</div>
             <p className="text-xs text-muted-foreground">
               {criticalPatients.length} critical
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Today's Surgeries
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-purple-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todaySurgeries.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {surgeries.filter((s) => s.status === "in-progress").length} in
-              progress
             </p>
           </CardContent>
         </Card>

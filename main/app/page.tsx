@@ -1,8 +1,9 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import {
   Card,
@@ -41,18 +42,11 @@ import {
 } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
-
-
-export const demoCredentials = {
-  admin: { username: "admin", password: "admin123" },
-  doctor: { username: "dr.smith", password: "doctor123" },
-  receptionist: { username: "receptionist.jane", password: "receptionist123" },
-  pharmacist: { username: "pharm.sarah", password: "pharma123" },
-};
+import { demoCredentials } from "@/lib/credentials";
 
 export default function LoginPage() {
   const router = useRouter();
-  
+  const { data: session, status } = useSession();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -64,6 +58,17 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Redirect if user is already logged in
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      // @ts-ignore - Assuming role is stored in session.user
+      const userRole = session.user.role;
+      if (userRole) {
+        router.push(`/${userRole.toLowerCase()}`);
+      }
+    }
+  }, [status, session, router]);
 
   const handleRoleChange = (role: string) => {
     setFormData({
@@ -91,55 +96,31 @@ export default function LoginPage() {
     });
   };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-      e.preventDefault();
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        username: formData.username,
+        password: formData.password,
+      });
 
-      setIsLoading(true);
-
-      setError("");
-
-  
-
-      try {
-
-        const result = await signIn("credentials", {
-
-          redirect: false,
-
-          username: formData.username,
-
-          password: formData.password,
-
-        });
-
-  
-
-        if (result?.error) {
-
-          setError(result.error);
-
-        } else {
-
-          router.push(`/${formData.role}`);
-
-        }
-
-      } catch (err) {
-
-        setError(
-
-          err instanceof Error ? err.message : "Invalid username or password"
-
-        );
-
-      } finally {
-
-        setIsLoading(false);
-
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        router.push(`/${formData.role}`);
       }
-
-    };
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Invalid username or password"
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -148,6 +129,20 @@ export default function LoginPage() {
       description: text,
     });
   };
+
+  // Show loading state while checking session
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      </div>
+    );
+  }
+
+  // Don't render login form if already authenticated
+  if (status === "authenticated") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 md:px-6 lg:px-8">
@@ -164,9 +159,7 @@ export default function LoginPage() {
               />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">
-            EASPATAAL
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">EASPATAAL</CardTitle>
           <CardDescription>
             Sign in to access the hospital management system
           </CardDescription>
@@ -343,14 +336,14 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             <div className="text-sm text-gray-600">
-              <p className="font-medium">Don't have an account?{" "}
+              <p className="font-medium">
+                Don't have an account?{" "}
                 <a href="/signup" className="text-blue-600 hover:underline">
                   Sign up
                 </a>
               </p>
             </div>
           </div>
-
         </CardContent>
       </Card>
     </div>

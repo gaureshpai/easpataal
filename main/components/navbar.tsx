@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -24,13 +24,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useSession, signOut } from "next-auth/react";
 import type { JSX } from "react";
-import { NotificationsPanel } from "@/components/notifications-panel";
 
 export function Navbar() {
   const { data: session } = useSession();
   const user = session?.user;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const getNavLinks = () => {
     const commonLinks = [
@@ -148,7 +148,6 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center space-x-2">
-            <NotificationsPanel />
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -178,7 +177,10 @@ export function Navbar() {
                     <span>Profile & Settings</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {signOut()}}>
+                <DropdownMenuItem onClick={() => {
+                  signOut();
+                  router.push("/");
+                  }}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -233,6 +235,7 @@ export function Navbar() {
               onClick={() => {
                 signOut();
                 setMobileMenuOpen(false);
+                router.push("/");
               }}
             >
               <LogOut className="h-4 w-4 mr-2" />

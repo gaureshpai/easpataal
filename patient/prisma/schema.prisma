@@ -49,7 +49,6 @@ model Patient {
   lastVisit        DateTime?     @db.Timestamp(6)
   nextAppointment  DateTime?     @db.Timestamp(6)
 
-  // Relations
   appointments  Appointment[]
   prescriptions Prescription[]
   tokenQueue    TokenQueue[]
@@ -63,8 +62,6 @@ model CounterCategory {
   description  String?
   department   Department? @relation(fields: [departmentId], references: [id])
   departmentId String?
-
-  // Relations
   counters     Counter[]
 
   @@map("counter_categories")
@@ -104,6 +101,7 @@ model TokenQueue {
   actualWaitTime    Int?
   calledAt          DateTime?
   completedAt       DateTime?
+  feedback          String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -132,7 +130,6 @@ model Department {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  // Relations
   tokenQueue        TokenQueue[]
   counters          Counter[]
   counterCategories CounterCategory[]
@@ -151,8 +148,6 @@ model Appointment {
   notes     String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
-
-  // Relations
   doctor    User              @relation(fields: [doctorId], references: [id])
   patient   Patient           @relation(fields: [patientId], references: [id])
 
@@ -168,8 +163,6 @@ model Prescription {
   createdAt DateTime           @default(now())
   notes     String?
   updatedAt DateTime           @updatedAt
-
-  // Relations
   items     PrescriptionItem[]
   doctor    User               @relation(fields: [doctorId], references: [id])
   patient   Patient            @relation(fields: [patientId], references: [id])
@@ -187,28 +180,12 @@ model PrescriptionItem {
   instructions   String?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
-
-  // Relations
   drug           DrugInventory @relation(fields: [drugId], references: [id])
   prescription   Prescription  @relation(fields: [prescriptionId], references: [id])
 
   @@index([prescriptionId])
   @@index([drugId])
   @@map("prescription_items")
-}
-
-model Display {
-  id             String        @id @default(cuid())
-  location       String
-  status         DisplayStatus @default(OFFLINE)
-  content        String        @default("Token Queue")
-  lastUpdate     DateTime      @default(now())
-  config         Json?         @default("{}")
-  createdAt      DateTime      @default(now())
-  isActive       Boolean       @default(true)
-  updatedAt      DateTime      @updatedAt
-
-  @@map("displays")
 }
 
 model DrugInventory {
@@ -223,8 +200,6 @@ model DrugInventory {
   batchNumber       String?
   category          String?
   expiryDate        DateTime?
-
-  // Relations
   prescriptionItems PrescriptionItem[]
 
   @@map("drug_inventory")
@@ -240,7 +215,6 @@ enum Role {
 enum AppointmentType {
   CONSULTATION
   FOLLOW_UP
-  EMERGENCY
 }
 
 enum BloodType {

@@ -216,7 +216,6 @@ enum Role {
 enum AppointmentType {
   CONSULTATION
   FOLLOW_UP
-  EMERGENCY
 }
 
 enum BloodType {
