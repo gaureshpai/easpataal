@@ -1,273 +1,203 @@
 "use server"
 
 import prisma from "@/lib/prisma"
-import { revalidatePath } from "next/cache"
 
-export interface ContentItem {
-    id: string
-    title: string
-    type: string
-    content: string
-    activeScreens: number
-    createdAt: string
-    updatedAt: string
+export interface AnalyticsData {
+  displays: {
+    total: number
+    online: number
+    offline: number
+  }
+  patients: {
+    total: number
+    active: number
+  }
+  tokens: {
+    waiting: number
+    called: number
+    completed: number
+    total: number
+  }
+  departments: {
+    total: number
+    active: number
+  }
+  performance: {
+    averageWaitTime: number
+    tokensProcessedToday: number
+    activeCounters: number
+  }
 }
 
-export interface Announcement {
-    id: string
-    text: string
-    createdAt: string
-    createdBy: string
-    updatedAt: string
-    active: boolean
-    resolved?: boolean
+export interface ActionResponse<T> {
+  success: boolean
+  data?: T
+  error?: string
 }
 
-export interface ContentResponse<T> {
-    success: boolean
-    data?: T
-    error?: string
-}
+export async function getSystemAnalyticsAction(): Promise<ActionResponse<AnalyticsData>> {
+  try {
+    // Fetch display statistics
+    const displays = await prisma.display.findMany({
+      select: {
+        status: true,
+      },
+    })
 
-export async function getAllContentAction(): Promise<ContentResponse<ContentItem[]>> {
-    try {
-        const displays = await prisma.display.findMany({
-            select: {
-                content: true,
-            },
-        })
-        
-        const contentCounts = displays.reduce(
-            (acc:any, display:any) => {
-                if (!display.content) return acc
-                acc[display.content] = (acc[display.content] || 0) + 1
-                return acc
-            },
-            {} as Record<string, number>,
-        )
-        
-        const contentItems: ContentItem[] = Object.entries(contentCounts).map(([content, count], index) => ({
-            id: `content-${index + 1}`,
-            title: content,
-            type: getContentType(content),
-            content: `Content for ${content}`,
-            activeScreens: count as number,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        }))
-
-        await prisma.$disconnect()
-        return { success: true, data: contentItems }
-    } catch (error) {
-        console.error("Error fetching content:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to fetch content" }
+    const displayStats = {
+      total: displays.length,
+      online: displays.filter(d => d.status === 'ONLINE').length,
+      offline: displays.filter(d => d.status === 'OFFLINE').length,
     }
-}
 
-export async function getAllAnnouncementsAction(): Promise<ContentResponse<Announcement[]>> {
-    try {
-        const systemAlerts = await prisma.systemAlert.findMany({
-            where: {
-                type: "ANNOUNCEMENT",
-                resolved: false, 
-            },
-            orderBy: { createdAt: "desc" },
-            take: 20,
-        })
+    // Fetch patient statistics
+    const patients = await prisma.patient.findMany({
+      select: {
+        status: true,
+      },
+    })
 
-        const announcements: Announcement[] = systemAlerts.map((alert:any) => ({
-            id: alert.id,
-            text: alert.message,
-            createdAt: alert.createdAt.toISOString(),
-            updatedAt: alert.updatedAt.toISOString(),
-            createdBy: "admin",
-            active: !alert.resolved,
-        }))
-
-        await prisma.$disconnect()
-        return { success: true, data: announcements }
-    } catch (error) {
-        console.error("Error fetching announcements:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to fetch announcements" }
+    const patientStats = {
+      total: patients.length,
+      active: patients.filter(p => p.status === 'ACTIVE').length,
     }
-}
 
-export async function createAnnouncementAction(formData: FormData): Promise<ContentResponse<Announcement>> {
-    try {
-        const text = formData.get("text") as string
-        const createdBy = formData.get("createdBy") as string
+    // Fetch token queue statistics
+    const tokens = await prisma.tokenQueue.findMany({
+      select: {
+        status: true,
+        createdAt: true,
+        completedAt: true,
+        estimatedWaitTime: true,
+      },
+    })
 
-        if (!text) {
-            return { success: false, error: "Announcement text is required" }
-        }
-        
-        const alert = await prisma.systemAlert.create({
-            data: {
-                type: "ANNOUNCEMENT",
-                message: text,
-                severity: "info",
-                resolved: false,
-            },
-        })
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
 
-        await prisma.$disconnect()
-        revalidatePath("/admin")
+    const tokensToday = tokens.filter(t => t.createdAt >= today)
 
-        return {
-            success: true,
-            data: {
-                id: alert.id,
-                text: alert.message,
-                createdAt: alert.createdAt.toISOString(),
-                updatedAt: alert.createdAt.toISOString(),
-                createdBy: createdBy || "admin",
-                active: !alert.resolved,
-            },
-        }
-    } catch (error) {
-        console.error("Error creating announcement:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to create announcement" }
+    const tokenStats = {
+      waiting: tokens.filter(t => t.status === 'WAITING').length,
+      called: tokens.filter(t => t.status === 'CALLED').length,
+      completed: tokens.filter(t => t.status === 'COMPLETED').length,
+      total: tokens.length,
     }
-}
 
-export async function deleteAnnouncementAction(id: string): Promise<ContentResponse<boolean>> {
-    try {
-        await prisma.systemAlert.update({
-            where: { id },
-            data: { resolved: true },
-        })
+    // Fetch department statistics
+    const departments = await prisma.department.findMany({
+      select: {
+        status: true,
+      },
+    })
 
-        await prisma.$disconnect()
-        revalidatePath("/admin")
-        return { success: true, data: true }
-    } catch (error) {
-        console.error("Error deleting announcement:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to delete announcement" }
+    const departmentStats = {
+      total: departments.length,
+      active: departments.filter(d => d.status === 'ACTIVE').length,
     }
-}
 
-export async function resolveAnnouncementAction(alertId: string) {
-    try {
-        await prisma.systemAlert.update({
-            where: { id: alertId },
-            data: {
-                resolved: true,
-                updatedAt: new Date(),
-            },
-        })
+    // Calculate average wait time
+    const completedTokensWithTime = tokens.filter(
+      t => t.status === 'COMPLETED' && t.completedAt && t.createdAt
+    )
 
-        await prisma.$disconnect()
-        revalidatePath("/admin")
-
-        return { success: true, data: true }
-    } catch (error) {
-        console.error("Error resolving emergency alert:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to resolve emergency alert" }
+    let averageWaitTime = 0
+    if (completedTokensWithTime.length > 0) {
+      const totalWaitTime = completedTokensWithTime.reduce((sum, token) => {
+        const waitTime = token.completedAt && token.createdAt
+          ? (token.completedAt.getTime() - token.createdAt.getTime()) / 60000 // Convert to minutes
+          : 0
+        return sum + waitTime
+      }, 0)
+      averageWaitTime = Math.round(totalWaitTime / completedTokensWithTime.length)
     }
-}
 
-export async function getSystemAnalyticsAction() {
-    try {
-        const displays = await prisma.display.findMany()
-        const totalDisplays = displays.length
-        const onlineDisplays = displays.filter((d:any) => d.status === "online").length
-        const offlineDisplays = displays.filter((d:any) => d.status === "offline").length
-        const warningDisplays = displays.filter((d:any) => d.status === "warning").length
-        
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
+    // Fetch active counters
+    const counters = await prisma.counter.findMany({
+      select: {
+        status: true,
+      },
+    })
 
-        const dailyPatients = await prisma.appointment.count({
-            where: {
-                date: {
-                    gte: today,
-                    lt: tomorrow,
-                },
-            },
-        })
+    const activeCounters = counters.filter(c => c.status === 'ACTIVE').length
 
-        const yesterday = new Date(today)
-        yesterday.setDate(yesterday.getDate() - 1)
-
-        const previousDayPatients = await prisma.appointment.count({
-            where: {
-                date: {
-                    gte: yesterday,
-                    lt: today,
-                },
-            },
-        })
-
-        const patientChange = dailyPatients - previousDayPatients
-        
-        const weekAgo = new Date()
-        weekAgo.setDate(weekAgo.getDate() - 7)
-
-        const weeklyEmergencyAlerts = await prisma.emergencyAlert.count({
-            where: {
-                createdAt: {
-                    gte: weekAgo,
-                },
-            },
-        })
-        
-        const activeSystemAlerts = await prisma.systemAlert.count({
-            where: {
-                resolved: false,
-            },
-        })
-        
-        const networkConnectivity = Math.round((onlineDisplays / Math.max(totalDisplays, 1)) * 100)
-        const contentSyncRate = Math.max(95, networkConnectivity - 2)
-        const responseTime = onlineDisplays > 50 ? 1.5 : 1.2
-        const errorRate = Math.max(0.1, ((offlineDisplays + warningDisplays) / Math.max(totalDisplays, 1)) * 100)
-
-        await prisma.$disconnect()
-
-        return {
-            success: true,
-            data: {
-                displays: {
-                    total: totalDisplays,
-                    online: onlineDisplays,
-                    offline: offlineDisplays,
-                    warning: warningDisplays,
-                },
-                patients: {
-                    daily: dailyPatients,
-                    change: patientChange,
-                },
-                alerts: {
-                    weekly: weeklyEmergencyAlerts,
-                    active: activeSystemAlerts,
-                },
-                performance: {
-                    networkConnectivity,
-                    contentSyncRate,
-                    responseTime,
-                    errorRate,
-                },
-            },
-        }
-    } catch (error) {
-        console.error("Error fetching system analytics:", error)
-        await prisma.$disconnect()
-        return { success: false, error: "Failed to fetch system analytics" }
+    const analyticsData: AnalyticsData = {
+      displays: displayStats,
+      patients: patientStats,
+      tokens: tokenStats,
+      departments: departmentStats,
+      performance: {
+        averageWaitTime,
+        tokensProcessedToday: tokensToday.length,
+        activeCounters,
+      },
     }
+
+    return {
+      success: true,
+      data: analyticsData,
+    }
+  } catch (error) {
+    console.error("Error fetching analytics:", error)
+    return {
+      success: false,
+      error: "Failed to fetch analytics data",
+    }
+  } finally {
+    await prisma.$disconnect()
+  }
 }
 
-function getContentType(content: string): string {
-    if (content.includes("Queue")) return "Queue Display"
-    if (content.includes("Emergency")) return "Emergency Information"
-    if (content.includes("Department")) return "Department Information"
-    if (content.includes("Drug") || content.includes("Inventory")) return "Inventory"
-    if (content.includes("Mixed")) return "Dashboard"
-    return "Information"
+export async function getDepartmentAnalyticsAction(departmentId: string): Promise<ActionResponse<any>> {
+  try {
+    const department = await prisma.department.findUnique({
+      where: { id: departmentId },
+      include: {
+        tokenQueue: {
+          where: {
+            createdAt: {
+              gte: new Date(new Date().setHours(0, 0, 0, 0)),
+            },
+          },
+        },
+        counters: {
+          where: {
+            status: 'ACTIVE',
+          },
+        },
+      },
+    })
+
+    if (!department) {
+      return {
+        success: false,
+        error: "Department not found",
+      }
+    }
+
+    const analytics = {
+      name: department.name,
+      location: department.location,
+      totalTokensToday: department.tokenQueue.length,
+      waitingTokens: department.tokenQueue.filter(t => t.status === 'WAITING').length,
+      completedTokens: department.tokenQueue.filter(t => t.status === 'COMPLETED').length,
+      activeCounters: department.counters.length,
+      currentOccupancy: department.currentOccupancy,
+      capacity: department.capacity,
+      occupancyRate: Math.round((department.currentOccupancy / department.capacity) * 100),
+    }
+
+    return {
+      success: true,
+      data: analytics,
+    }
+  } catch (error) {
+    console.error("Error fetching department analytics:", error)
+    return {
+      success: false,
+      error: "Failed to fetch department analytics",
+    }
+  } finally {
+    await prisma.$disconnect()
+  }
 }

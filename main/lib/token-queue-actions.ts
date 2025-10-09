@@ -13,7 +13,7 @@ export interface TokenQueueData {
   departmentId: string;
   departmentName: string;
   status: "Waiting" | "Called" | "In Progress" | "Completed" | "Cancelled";
-  priority: "Normal" | "Urgent" | "Emergency";
+  priority: "Normal" | "Urgent";
   estimatedWaitTime: number;
   actualWaitTime: number | null;
   createdAt: Date;
@@ -44,7 +44,7 @@ export async function getAllActiveTokensAction(): Promise<
   try {
     const tokens = await prisma.tokenQueue.findMany({
       where: {
-        status: { in: ["Waiting", "Called", "In Progress"] },
+        status: { in: ["WAITING", "CALLED", "IN PROGRESS"] },
       },
       include: {
         patient: true,

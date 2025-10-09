@@ -232,7 +232,7 @@ export async function getDoctorPatients(doctorUsername: string, limit = 50): Pro
     try {
         const patients = await prisma.patient.findMany({
             where: {
-                status: "Active",
+                status: "ACTIVE",
             },
             include: {
                 prescriptions: {
@@ -326,7 +326,7 @@ export async function searchPatients(query: string, limit = 20): Promise<Patient
                     { id: { contains: query, mode: "insensitive" } },
                     { phone: { contains: query } },
                 ],
-                status: "Active",
+                status: "ACTIVE",
             },
             include: {
                 prescriptions: {
@@ -703,14 +703,14 @@ export async function getDoctorStats(doctorUsername: string) {
 
                 prisma.patient.count({
                     where: {
-                        status: "Active",
+                        status: "ACTIVE",
                     },
                 }),
 
                 prisma.prescription.count({
                     where: {
                         doctorId,
-                        status: "Pending",
+                        status: "PENDING",
                     },
                 }),
 
@@ -721,7 +721,7 @@ export async function getDoctorStats(doctorUsername: string) {
                             gte: today,
                             lt: tomorrow,
                         },
-                        status: "Completed",
+                        status: "COMPLETED",
                     },
                 }),
 

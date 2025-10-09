@@ -42,16 +42,9 @@ export default function AdminOverviewPage() {
         {
           title: "Admin Dashboard",
           description:
-            "Main admin dashboard with system analytics and emergency alerts",
+            "Main admin dashboard with system analytics",
           path: "/admin",
           icon: <LayoutDashboard className="h-6 w-6 text-blue-600" />,
-          badge: "Core",
-        },
-        {
-          title: "Display Management",
-          description: "Manage all hospital display screens",
-          path: "/admin/displays",
-          icon: <Monitor className="h-6 w-6 text-purple-600" />,
           badge: "Core",
         },
         {

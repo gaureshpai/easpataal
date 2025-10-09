@@ -46,7 +46,6 @@ import {
   updatePatientVitalsAction,
   refreshDashboardAction,
 } from "@/lib/receptionist-actions";
-import { EmergencyAlertsModal } from "./emergency-alerts-modal";
 import { getConditionColor, getSurgeryStatusColor } from "@/lib/functions";
 
 export default function ReceptionistDashboardContent({
@@ -63,8 +62,6 @@ export default function ReceptionistDashboardContent({
   const [isVitalsDialogOpen, setIsVitalsDialogOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentDate] = useState(new Date());
-  const [isEmergencyAlertsModalOpen, setIsEmergencyAlertsModalOpen] =
-    useState(false);
 
   const [patientForm, setPatientForm] = useState({
     name: "",
@@ -268,16 +265,6 @@ export default function ReceptionistDashboardContent({
               className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
             />
             Refresh
-          </Button>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEmergencyAlertsModalOpen(true)}
-            className="text-red-600 hover:text-red-700 w-full sm:w-auto"
-          >
-            <AlertTriangle className="h-4 w-4 mr-1" />
-            Emergency Alerts
           </Button>
         </div>
       </div>

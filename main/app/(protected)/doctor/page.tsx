@@ -51,8 +51,7 @@ import {
   getAllDrugsForSelectionAction,
   type PatientData,
   type AppointmentData,
-} from "@/lib/doctor-actions"
-import { getDoctorNotificationsAction, type NotificationData } from "@/lib/notification-actions"
+} from "@/lib/doctor-actions";
 import { getNotificationBgColor, getStatusColor } from "@/lib/functions"
 import { Medication, DrugOption } from "@/lib/helpers"
 
@@ -66,7 +65,6 @@ export default function DoctorDashboard() {
   const [appointments, setAppointments] = useState<AppointmentData[]>([])
   const [patients, setPatients] = useState<PatientData[]>([])
   const [stats, setStats] = useState<any>(null)
-  const [notifications, setNotifications] = useState<NotificationData[]>([])
   const [loading, setLoading] = useState(true)
 
   const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null)
@@ -106,11 +104,10 @@ export default function DoctorDashboard() {
     try {
       setLoading(true)
       startTransition(async () => {
-        const [appointmentsResult, patientsResult, statsResult, notificationsResult] = await Promise.all([
+        const [appointmentsResult, patientsResult, statsResult] = await Promise.all([
           getDoctorAppointmentsAction(user.name),
           getDoctorPatientsAction(user.name, 10),
-          getDoctorStatsAction(user.name),
-          getDoctorNotificationsAction(user.id),
+          getDoctorStatsAction(user.name)
         ])
 
         if (appointmentsResult.success && appointmentsResult.data) {
@@ -123,10 +120,6 @@ export default function DoctorDashboard() {
 
         if (statsResult.success && statsResult.data) {
           setStats(statsResult.data)
-        }
-
-        if (notificationsResult.success && notificationsResult.data) {
-          setNotifications(notificationsResult.data)
         }
       })
     } catch (error) {
@@ -310,8 +303,6 @@ export default function DoctorDashboard() {
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case "emergency":
-        return <AlertTriangle className="h-4 w-4 text-red-500" />
       case "warning":
         return <AlertTriangle className="h-4 w-4 text-yellow-500" />
       case "appointment":
@@ -792,7 +783,6 @@ export default function DoctorDashboard() {
           <Tabs defaultValue="patients" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 bg-white">
               <TabsTrigger value="patients">Recent Patients</TabsTrigger>
-              <TabsTrigger value="alerts">Alerts & Notifications</TabsTrigger>
             </TabsList>
 
             <TabsContent value="patients" className="space-y-6">
@@ -1069,66 +1059,6 @@ export default function DoctorDashboard() {
                       <div className="text-center py-8 text-gray-500">
                         <Users className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                         <p>No recent patients</p>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="alerts" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <AlertTriangle className="h-5 w-5 text-blue-600" />
-                    <span>Alerts & Notifications</span>
-                  </CardTitle>
-                  <CardDescription>Important updates requiring your attention</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-4 border rounded-lg ${getNotificationBgColor(notification.type, notification.priority)} ${!notification.read ? "border-l-4 border-l-blue-500" : ""
-                            }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex items-start space-x-3">
-                              {getNotificationIcon(notification.type)}
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2">
-                                  <p
-                                    className={`font-medium ${!notification.read ? "text-gray-900" : "text-gray-700"}`}
-                                  >
-                                    {notification.title}
-                                  </p>
-                                  {notification.priority === "high" && (
-                                    <Badge variant="destructive" className="text-xs">
-                                      High Priority
-                                    </Badge>
-                                  )}
-                                  {!notification.read && <div className="h-2 w-2 bg-blue-500 rounded-full"></div>}
-                                </div>
-                                <p className={`text-sm mt-1 ${!notification.read ? "text-gray-700" : "text-gray-600"}`}>
-                                  {notification.message}
-                                </p>
-                                <div className="flex items-center justify-between mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(notification.createdAt).toLocaleString()}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        <Bell className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                        <p>No notifications at this time</p>
-                        <p className="text-sm">You're all caught up!</p>
                       </div>
                     )}
                   </div>
