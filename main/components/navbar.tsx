@@ -86,13 +86,6 @@ export function Navbar() {
           icon: <Heart className="h-4 w-4 mr-2" />,
         },
       ],
-      receptionist: [
-        {
-          name: "Token Queues",
-          href: "/receptionist/token-queue",
-          icon: <Heart className="h-4 w-4 mr-2" />,
-        },
-      ],
     };
 
     if (user?.role && roleSpecificLinks[user.role.toLowerCase()]) {

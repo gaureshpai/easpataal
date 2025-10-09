@@ -12,11 +12,7 @@ export default function UnauthorizedPage() {
   const router = useRouter();
 
   const handleGoBack = () => {
-    if (user) {
-      router.push(`/${user.role.toLowerCase()}`);
-    } else {
-      router.push("/");
-    }
+    router.push('/');
   };
 
   return (

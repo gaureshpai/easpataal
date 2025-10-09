@@ -149,13 +149,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
-            <div className="bg-black p-2 rounded-md">
+            <div className="bg-white p-2 rounded-md">
               <Image
                 src="/logo.png"
                 alt="Logo"
-                width={24}
-                height={24}
-                className="invert"
+                width={64}
+                height={64}
+                className="rounded-full"
               />
             </div>
           </div>
