@@ -84,3 +84,13 @@ export async function getPeopleInTheQueue(TokenId: string) {
 
   return count;
 }
+
+export async function pushFeedback({tokenid,feedback,rating}:{tokenid:string,feedback:string,rating:number}){
+    const response = await prisma.tokenQueue.update({
+        where:{id:tokenid},
+        data:{
+          feedback,rating
+        }
+    })
+    return response;
+}

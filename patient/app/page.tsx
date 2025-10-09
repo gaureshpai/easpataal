@@ -1,6 +1,6 @@
 "use client";
 
-import { getPatientsById, getTokenByPatientId } from "@/lib/serverFunctions";
+import { getPatientsById, getTokenByPatientId, pushFeedback } from "@/lib/serverFunctions";
 import { Patient, Prisma } from "@prisma/client";
 import { useEffect, useState } from "react";
 
@@ -28,6 +28,20 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(()=>{
+    
+    if(selectedProfile===null){
+      return
+    }
+    let a = setInterval(async () => {
+        const fetchedTokens: Prisma.TokenQueueGetPayload<{
+        include: { department: true; patient: true };
+      }>[] = await getTokenByPatientId(selectedProfile);
+      setTokens(fetchedTokens);
+      },10000)
+    return () => clearInterval(a);
+  },[selectedProfile])
+
   const handleProfileSelect = async (profileId: string) => {
     setSelectedProfile(profileId);
     setLoading(true);
@@ -36,12 +50,6 @@ export default function Page() {
         include: { department: true; patient: true };
       }>[] = await getTokenByPatientId(profileId);
       setTokens(fetchedTokens);
-      setInterval(async () => {
-        const fetchedTokens: Prisma.TokenQueueGetPayload<{
-        include: { department: true; patient: true };
-      }>[] = await getTokenByPatientId(profileId);
-      setTokens(fetchedTokens);
-      },5000)
     } catch (error) {
       console.error("Error fetching tokens:", error);
     } finally {
@@ -59,16 +67,12 @@ export default function Page() {
   };
 
   const handleSubmitFeedback = async (tokenId: string) => {
-    // Add your feedback submission logic here
-    console.log("Submitting feedback for token:", tokenId, {
-      rating,
-      feedback: feedbackText,
-    });
+      await pushFeedback({tokenid:tokenId,feedback:feedbackText,rating:rating});
     // Reset feedback state
     setFeedbackToken(null);
     setRating(0);
     setFeedbackText("");
-    // You can call your API here to save feedback
+    
   };
 
   const getStatusColor = (status: string) => {
