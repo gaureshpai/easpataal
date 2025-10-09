@@ -213,7 +213,7 @@ export default function DoctorOTPage() {
   const availableTheaters = otData.theaters.filter((t) => t.status === "available").length
 
   return (
-    <AuthGuard allowedRoles={["doctor", "admin"]} className="container mx-auto p-6 space-y-6">
+    <AuthGuard allowedRoles={["DOCTOR", "ADMIN"]} className="container mx-auto p-6 space-y-6">
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 

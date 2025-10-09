@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Monitor, Users, AlertTriangle, Plus, Trash2, CheckCircle, Loader2 } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "next-auth/react";
 import { Navbar } from "@/components/navbar"
 import { AuthGuard } from "@/components/auth-guard"
 import { getAllDisplaysAction } from "@/lib/display-actions"
@@ -46,7 +46,7 @@ export default function AdminPanel() {
   const [emergencyAlertsLoading, setEmergencyAlertsLoading] = useState(true)
 
   const [isPending, startTransition] = useTransition()
-  const { user } = useAuth()
+  const { data: session } = useSession();
   const { toast } = useToast()
 
   const [emergencyAlert, setEmergencyAlert] = useState({
@@ -208,7 +208,7 @@ export default function AdminPanel() {
     startTransition(async () => {
       const formData = new FormData()
       formData.append("text", newAnnouncement)
-      formData.append("createdBy", user?.name || "admin")
+      formData.append("createdBy", session?.user?.name || "admin");
 
       const result = await createAnnouncementAction(formData)
 
@@ -307,7 +307,7 @@ export default function AdminPanel() {
   )
 
   return (
-    <AuthGuard allowedRoles={["admin"]} className="container mx-auto p-2 md:p-6 space-y-6">
+    <AuthGuard allowedRoles={["ADMIN"]} className="container mx-auto p-2 md:p-6 space-y-6">
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">

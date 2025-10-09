@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar, User, MapPin, FileText, AlertTriangle, X, Users } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { scheduleSurgeryAction } from "@/lib/ot-actions"
-import { useAuth } from "@/hooks/use-auth"
+import { useSession } from "next-auth/react";
 import { Doctor, Patient, SurgerySchedulerProps } from "@/lib/helpers"
 import { getPriorityColor } from "@/lib/functions"
 
@@ -36,7 +36,8 @@ export function SurgeryScheduler({ onSuccess, onCancel, availableTheaters }: Sur
     })
 
     const { toast } = useToast()
-    const { user } = useAuth()
+    const { data: session } = useSession();
+    const user = session?.user;
 
     useEffect(() => {
         const fetchPatients = async () => {
