@@ -21,8 +21,8 @@ export function AuthGuard({
       return;
     }
 
-    if (allowedRoles && !allowedRoles.includes(session?.user?.role)) {
-      console.log(session?.user);
+    if (session && allowedRoles && !allowedRoles.includes(session.user?.role)) {
+      console.log(session.user);
       router.push("/unauthorized");
       return;
     }
@@ -31,7 +31,7 @@ export function AuthGuard({
   if (
     status === "loading" ||
     !session ||
-    (allowedRoles && !allowedRoles.includes(session?.user?.role))
+    (session && allowedRoles && !allowedRoles.includes(session.user?.role))
   ) {
     return null;
   }

@@ -34,8 +34,13 @@ import { useToast } from "@/hooks/use-toast"
 
 // TODO: Create these actions
 import { getAllCountersAction, createCounterAction, updateCounterAction, deleteCounterAction } from "@/lib/counter-actions";
-import type { Counter } from "@prisma/client";
+import type { Counter as PrismaCounter, User } from "@prisma/client";
+
+type Counter = PrismaCounter & {
+  assignedUser: User | null;
+};
 import { type CounterFormData } from "@/lib/helpers";
+import { getDoctorsAction, UserWithStats } from "@/lib/user-actions"
 
 const CounterCRUDPage = () => {
   const [counters, setCounters] = useState<Counter[]>([])
@@ -51,10 +56,23 @@ const CounterCRUDPage = () => {
   })
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
+  const [doctors, setDoctors] = useState<UserWithStats[]>([]);
 
   useEffect(() => {
     loadCounters()
+    loadDoctors()
   }, [])
+
+  const loadDoctors = async () => {
+    try {
+      const result = await getDoctorsAction();
+      if (result.success && result.data) {
+        setDoctors(result.data);
+      }
+    } catch (error) {
+      console.error("Error loading doctors:", error);
+    }
+  };
 
   const loadCounters = async () => {
     try {
@@ -94,6 +112,7 @@ const CounterCRUDPage = () => {
       name: "",
       location: "",
       status: "ACTIVE",
+      assignedUserId: "",
     })
   }
 
@@ -106,6 +125,9 @@ const CounterCRUDPage = () => {
         formDataObj.append("name", formData.name)
         formDataObj.append("location", formData.location)
         formDataObj.append("status", formData.status)
+        if (formData.assignedUserId) {
+          formDataObj.append("assignedUserId", formData.assignedUserId)
+        }
 
         const result = await createCounterAction(formDataObj)
 
@@ -142,6 +164,7 @@ const CounterCRUDPage = () => {
       name: counter.name,
       location: counter.location || "",
       status: counter.status as any,
+      assignedUserId: counter.assignedUserId || "",
     })
     setIsEditDialogOpen(true)
   }
@@ -223,8 +246,9 @@ const CounterCRUDPage = () => {
   }
 
   const handleSelectChange = (field: keyof CounterFormData) => (value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value as any }))
-  }
+    const finalValue = value === "none" ? "" : value;
+    setFormData((prev) => ({ ...prev, [field]: finalValue as any }));
+  };
 
   const CounterForm = ({ isEdit = false, onSubmit }: { isEdit?: boolean; onSubmit: (e: React.FormEvent) => void }) => (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -260,6 +284,23 @@ const CounterCRUDPage = () => {
           <SelectContent>
             <SelectItem value="ACTIVE">Active</SelectItem>
             <SelectItem value="INACTIVE">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="assignedUserId">Assign User</Label>
+        <Select value={formData.assignedUserId} onValueChange={handleSelectChange("assignedUserId")} disabled={isPending}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a doctor" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">None</SelectItem>
+            {doctors.map((doctor) => (
+              <SelectItem key={doctor.id} value={doctor.id}>
+                {doctor.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -361,6 +402,9 @@ const CounterCRUDPage = () => {
                       Status
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Assigned Doctor
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -373,6 +417,7 @@ const CounterCRUDPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <Badge>{counter.status}</Badge>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{counter.assignedUser?.name || "-"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center space-x-2">
                           <Button variant="outline" size="sm" onClick={() => handleEditCounter(counter)} disabled={isPending}>

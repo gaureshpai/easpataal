@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import type { Role } from "@prisma/client"
+import bcrypt from "bcrypt"
 
 export interface CreateUserData {
     username: string
@@ -278,7 +279,6 @@ export async function getUserStatsAction() {
             by: ["department"],
             where: {
                 status: "ACTIVE",
-                department: { not: null },
             },
             _count: {
                 department: true,
@@ -372,19 +372,21 @@ export async function validateUserCredentialsAction(
         await prisma.$disconnect()
 
         if (!user) {
-            return { success: false, error: "User not found" }
+            return { success: false, error: "Invalid credentials" }
         }
 
         if (user.status !== "ACTIVE") {
             return { success: false, error: "Account is inactive" }
         }
 
-        if ("password" in user && user.password) {
-            if (user.password !== password) {
-                return { success: false, error: "Invalid password" }
+        if (user.password) {
+            const passwordMatch = await bcrypt.compare(password, user.password)
+            if (!passwordMatch) {
+                return { success: false, error: "Invalid credentials" }
             }
         } else {
-            console.warn("Password field not available, allowing login for development")
+            // This case should ideally not happen if all users have passwords
+            return { success: false, error: "Invalid credentials" }
         }
 
         return { success: true, data: user as UserWithStats }
@@ -392,5 +394,20 @@ export async function validateUserCredentialsAction(
         console.error("Error validating user credentials:", error)
         await prisma.$disconnect()
         return { success: false, error: "Failed to validate credentials" }
+    }
+}
+
+export async function getDoctorsAction(): Promise<UserActionResponse<UserWithStats[]>> {
+    try {
+        const doctors = await prisma.user.findMany({
+            where: { role: "DOCTOR" },
+        });
+
+        await prisma.$disconnect();
+        return { success: true, data: doctors as UserWithStats[] };
+    } catch (error) {
+        console.error("Error finding doctors:", error);
+        await prisma.$disconnect();
+        return { success: false, error: "Failed to fetch doctors" };
     }
 }

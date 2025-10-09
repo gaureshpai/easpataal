@@ -106,8 +106,8 @@ model TokenQueue {
   updatedAt DateTime @updatedAt
 
   // Relations
-  patient    Patient    @relation(fields: [patientId], references: [id])
-  counter    Counter?   @relation(fields: [counterId], references: [id])
+  patient Patient  @relation(fields: [patientId], references: [id])
+  counter Counter? @relation(fields: [counterId], references: [id])
 
   @@map("token_queue")
 }
@@ -115,19 +115,7 @@ model TokenQueue {
 model Department {
   id               String           @id @default(cuid())
   name             String           @unique
-  description      String
-  location         String
-  contactNumber    String?
-  email            String?
-  operatingHours   String           @default("24/7")
   status           DepartmentStatus @default(ACTIVE)
-  capacity         Int              @default(50)
-  currentOccupancy Int              @default(0)
-  specializations  String[]         @default([])
-  equipment        String[]         @default([])
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-
   counters          Counter[]
   counterCategories CounterCategory[]
 

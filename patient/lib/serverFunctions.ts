@@ -37,7 +37,6 @@ export async function getTokenByPatientId(patientId: string) {
       patientId: patientId,
     },
     include: {
-      department: true,
       patient: true,
     },
   });

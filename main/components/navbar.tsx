@@ -164,16 +164,13 @@ export function Navbar() {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/profile-settings"
-                    className="flex items-center w-full"
+                    className="flex items-center cursor-pointer w-full"
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Profile & Settings</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                  signOut();
-                  router.push("/");
-                  }}>
+                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -217,18 +214,17 @@ export function Navbar() {
             ))}
             <Link
               href="/profile-settings"
-              className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100 flex items-center"
+              className="px-3 py-2 rounded-md text-base cursor-pointer font-medium text-gray-700 hover:bg-gray-100 flex items-center"
               onClick={() => setMobileMenuOpen(false)}
             >
               <Settings className="h-4 w-4 mr-2" />
               Profile & Settings
             </Link>
             <button
-              className="w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 flex items-center"
+              className="w-full text-left cursor-pointer px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50 flex items-center"
               onClick={() => {
-                signOut();
+                signOut({ callbackUrl: "/" });
                 setMobileMenuOpen(false);
-                router.push("/");
               }}
             >
               <LogOut className="h-4 w-4 mr-2" />
