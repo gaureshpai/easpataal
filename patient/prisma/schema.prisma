@@ -41,7 +41,7 @@ model Patient {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @updatedAt
   allergies        String[]
-  bloodType        String?       @db.VarChar(10)
+  bloodType        BloodType
   emergencyContact String?       @db.VarChar(100)
   emergencyPhone   String?       @db.VarChar(20)
   medicalHistory   Json?         @default("[]")
