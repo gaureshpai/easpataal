@@ -1,0 +1,38 @@
+import { Patient, Gender, BloodType } from '@prisma/client';
+
+export const patients: Omit<Patient, 'id' | 'createdAt' | 'updatedAt'>[] = [
+  {
+    name: 'John Doe',
+    age: 45,
+    gender: Gender.MALE,
+    phone: '555-1234',
+    address: '123 Main St, Anytown, USA',
+    condition: 'Stable',
+    status: 'ACTIVE',
+    allergies: ['Peanuts'],
+    bloodType: BloodType.O_POS,
+    emergencyContact: 'Jane Doe',
+    emergencyPhone: '555-5678',
+    medicalHistory: JSON.parse('[{"date":"2022-01-15","event":"Annual Check-up"}]'),
+    vitals: JSON.parse('{"bp":"120/80","hr":72}'),
+    lastVisit: new Date('2023-10-26T10:00:00Z'),
+    nextAppointment: new Date('2024-01-15T11:00:00Z'),
+  },
+  {
+    name: 'Jane Smith',
+    age: 32,
+    gender: Gender.FEMALE,
+    phone: '555-4321',
+    address: '456 Oak Ave, Anytown, USA',
+    condition: 'Good',
+    status: 'ACTIVE',
+    allergies: [],
+    bloodType: BloodType.A_NEG,
+    emergencyContact: 'John Smith',
+    emergencyPhone: '555-8765',
+    medicalHistory: JSON.parse('[]'),
+    vitals: JSON.parse('{"bp":"110/70","hr":68}'),
+    lastVisit: null,
+    nextAppointment: null,
+  },
+];
