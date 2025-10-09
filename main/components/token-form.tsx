@@ -7,15 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 
-import { getCountersAction } from "@/lib/counter-actions";
-import { Counter, CounterCategory } from "@prisma/client";
+import { CounterCategory } from "@prisma/client";
 import { createTokenAction } from "@/lib/token-queue-actions";
 import { getCounterCategoriesAction } from "@/lib/counter-category-actions"
 
 interface TokenFormProps {
   patientId: string;
-  onSuccess: () => void;
-  onCancel: () => void;
+  onSuccess: () => any;
+  onCancel: () => any;
 }
 
 const TokenForm = ({ patientId, onSuccess, onCancel }: TokenFormProps) => {
