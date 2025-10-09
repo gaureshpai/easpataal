@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/component/Navbar";
 
-import type { Metadata } from "next";
-
 export const metadata: Metadata = {
   title: "EASPATAAL - Patient",
   description: "Patient portal for EASPATAAL",
