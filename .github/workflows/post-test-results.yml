@@ -2,7 +2,7 @@ name: Post Test Results
 
 on:
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ["CI/CD Pipeline - Main", "CI/CD Pipeline - Patient"]
     types: [completed]
 
 permissions:
