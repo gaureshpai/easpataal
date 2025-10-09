@@ -106,20 +106,20 @@ export function Navbar() {
 
   return (
     <header className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-2 md:px-6 lg:px-8">
+      <div className="max-w-7xl overflow-hidden mx-auto px-2 md:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <Link
               href={`/${user?.role.toLowerCase()}`}
               className="flex items-center space-x-2"
             >
-              <div className="bg-black p-1.5 rounded-md">
+              <div className="bg-white p-1.5 rounded-md">
                 <Image
                   src="/logo.png"
                   alt="EASPATAAL Logo"
-                  width={24}
-                  height={24}
-                  className="invert"
+                  width={64}
+                  height={64}
+                  className="rounded-3xl"
                 />
               </div>
               <div className="flex items-center">
