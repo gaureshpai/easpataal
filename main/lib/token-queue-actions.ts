@@ -321,19 +321,17 @@ export async function updateTokenStatusAction(
 
     if (status === "CALLED") {
       updateData.calledAt = new Date();
-    } else if (status === "COMPLETED" || status === "CANCELLED") {
-      updateData.completedAt = new Date();
-
       const token = await prisma.tokenQueue.findUnique({
         where: { id: tokenId },
       });
-
       if (token) {
         const actualWaitTime = Math.floor(
-          (new Date().getTime() - token.createdAt.getTime()) / (1000 * 60)
+          (updateData.calledAt.getTime() - token.createdAt.getTime()) / (1000 * 60)
         );
         updateData.actualWaitTime = actualWaitTime;
       }
+    } else if (status === "COMPLETED" || status === "CANCELLED") {
+      updateData.completedAt = new Date();
     }
 
     const token = await prisma.tokenQueue.update({

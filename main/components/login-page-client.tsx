@@ -112,6 +112,7 @@ export default function LoginPage() {
         setError(result.error);
       } else {
         router.push(`/${formData.role}`);
+        router.refresh();
       }
     } catch (err) {
       setError(
