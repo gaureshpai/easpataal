@@ -1,7 +1,6 @@
 import type React from "react";
 import type { Role } from "@prisma/client";
 import type { PatientData } from "./doctor-service";
-import type { OTData } from "./ot-service";
 
 export const roles: Role[] = ["ADMIN", "DOCTOR", "RECEPTIONIST", "PHARMACIST"];
 
@@ -84,28 +83,10 @@ export interface DrugOption {
   isAvailable: boolean;
 }
 
-export interface DisplayPageProps {
-  params: Promise<{ id: string }>;
-}
-
 export interface AuthGuardProps {
   children: React.ReactNode;
   allowedRoles?: string[];
   className?: string;
-}
-
-export interface EmergencyAlert1 {
-  id: number;
-  type: "Code Blue" | "Code Red" | "Code Pink" | "Code Yellow";
-  location: string;
-  time: string;
-  severity: "critical" | "high" | "medium";
-  description?: string;
-}
-
-export interface EmergencyAlertProps1 {
-  alerts: EmergencyAlert1[];
-  onDismiss: (id: number) => void;
 }
 
 export interface DrugInventoryItem {
@@ -167,45 +148,6 @@ export interface PharmacyDashboardClientProps {
   statistics: PharmacyStatistics;
   topMedications: TopMedication[];
   prescriptionTrends: PrescriptionTrend[];
-}
-
-export interface PublicDisplayProps {
-  displayId: string;
-  displayData?: {
-    id: string;
-    location: string;
-    status: string;
-    content: string;
-    lastUpdate: string;
-    isActive: boolean;
-    config?: any;
-  };
-}
-
-export interface DisplayData {
-  tokenQueue: Array<{
-    token_id: string;
-    patient_name: string;
-    display_name?: string | null;
-    status: string;
-    department: string;
-    priority: number;
-    estimated_time?: string | null;
-  }>;
-  departments: Array<{
-    dept_id: string;
-    department_name: string;
-    location: string;
-    current_tokens: number;
-  }>;
-  drugInventory: Array<{
-    drug_id: string;
-    drug_name: string;
-    current_stock: number;
-    min_stock: number;
-    status: string;
-  }>;
-  contentType?: string;
 }
 
 export interface Patient {

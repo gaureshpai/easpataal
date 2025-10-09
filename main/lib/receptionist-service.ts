@@ -54,7 +54,6 @@ export interface Task {
 
 export interface ReceptionistDashboardData {
   patients: Patient[];
-  surgeries: Surgery[];
   tasks: Task[];
 }
 
@@ -62,7 +61,7 @@ export async function getReceptionistDashboardData(): Promise<ReceptionistDashbo
   try {
     const patientsData = await prisma.patient.findMany({
       where: {
-        status: "Active",
+        status: "ACTIVE",
       },
       include: {
         prescriptions: {
@@ -72,8 +71,7 @@ export async function getReceptionistDashboardData(): Promise<ReceptionistDashbo
                 drug: true,
               },
             },
-            doctor: {
-              select: {
+            doctor: {              select: {
                 name: true,
               },
             },
@@ -93,11 +91,11 @@ export async function getReceptionistDashboardData(): Promise<ReceptionistDashbo
       const vitals =
         typeof patient.vitals === "object" && patient.vitals !== null
           ? (patient.vitals as {
-              bp?: string;
-              pulse?: string;
-              temp?: string;
-              spo2?: string;
-            })
+            bp?: string;
+            pulse?: string;
+            temp?: string;
+            spo2?: string;
+          })
           : { bp: "", pulse: "", temp: "", spo2: "" };
 
       const latestPrescription = patient.prescriptions[0];
@@ -133,57 +131,6 @@ export async function getReceptionistDashboardData(): Promise<ReceptionistDashbo
       };
     });
 
-    const surgeriesData = await prisma.oTStatus.findMany({
-      where: {
-        patientName: { not: "null" },
-        procedure: { not: "Available" },
-        startTime: {
-          gte: new Date(new Date().setHours(0, 0, 0, 0)),
-          lte: new Date(new Date().setHours(23, 59, 59, 999)),
-        },
-      },
-      orderBy: {
-        startTime: "asc",
-      },
-    });
-
-    const surgeries: Surgery[] = surgeriesData.map((surgery) => {
-      const now = new Date();
-      const startTime = new Date(surgery.startTime);
-      const estimatedEnd = new Date(surgery.estimatedEnd);
-
-      let status: "scheduled" | "in-progress" | "completed" | "cancelled" =
-        "scheduled";
-      if (
-        surgery.status === "In Progress" ||
-        (now >= startTime && now <= estimatedEnd)
-      ) {
-        status = "in-progress";
-      } else if (surgery.status === "Completed" || now > estimatedEnd) {
-        status = "completed";
-      } else if (surgery.status === "Cancelled") {
-        status = "cancelled";
-      }
-
-      const duration = Math.floor(
-        (estimatedEnd.getTime() - startTime.getTime()) / (1000 * 60 * 60)
-      );
-
-      return {
-        id: surgery.id,
-        patientName: surgery.patientName || "Unknown Patient",
-        surgeon: surgery.surgeon || "Dr. Assigned",
-        procedure: surgery.procedure,
-        theater: surgery.id,
-        scheduledTime: startTime.toLocaleTimeString("en-IN", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status,
-        estimatedDuration: `${duration} hours`,
-      };
-    });
-
     const tasks: Task[] = patients
       .filter(
         (patient) =>
@@ -209,14 +156,10 @@ export async function getReceptionistDashboardData(): Promise<ReceptionistDashbo
         assignedBy: patient.doctor,
       }));
 
-    return {
-      patients,
-      surgeries,
-      tasks,
-    };
+    return { patients, tasks }
   } catch (error) {
-    console.error("Error fetching receptionist dashboard data:", error);
-    throw new Error("Failed to fetch receptionist dashboard data");
+    console.error("Error fetching dashboard data:", error)
+    return { patients: [], tasks: [] }
   }
 }
 
@@ -236,7 +179,7 @@ export async function updatePatient(
       data: {
         name: patientData.name,
         age: patientData.age,
-        gender: patientData.gender,
+        gender: patientData.gender as any,
         condition: patientData.condition,
         updatedAt: new Date(),
       },
@@ -319,8 +262,7 @@ export async function administerMedication(
     });
 
     if (!prescriptionItem) {
-      return {
-        success: false,
+      return {        success: false,
         message: "Medication not found in patient's prescription",
       };
     }
@@ -356,35 +298,21 @@ export async function completeTask(
 
 export async function getReceptionistStats() {
   try {
-    const [totalPatients, criticalPatients, totalSurgeries, activeSurgeries] =
+    const [totalPatients, criticalPatients] =
       await Promise.all([
         prisma.patient.count({
-          where: { status: "Active" },
+          where: { status: "ACTIVE" },
         }),
         prisma.patient.count({
           where: {
-            status: "Active",
-            condition: "Critical",
-          },
-        }),
-        prisma.oTStatus.count({
-          where: {
-            patientName: { not: "null" },
-            procedure: { not: "Available" },
-          },
-        }),
-        prisma.oTStatus.count({
-          where: {
-            status: "In Progress",
+            status: "ACTIVE", condition: "Critical",
           },
         }),
       ]);
 
     return {
       totalPatients,
-      criticalPatients,
-      totalSurgeries,
-      activeSurgeries,
+      criticalPatients
     };
   } catch (error) {
     console.error("Error fetching receptionist stats:", error);

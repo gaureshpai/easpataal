@@ -140,7 +140,7 @@ export async function addDrugToInventory(drugData: {
                 location: drugData.location,
                 batchNumber: drugData.batchNumber,
                 expiryDate: drugData.expiryDate,
-                status: getStockStatus(drugData.currentStock, drugData.minStock),
+                status: getStockStatus(drugData.currentStock, drugData.minStock) as any,
             },
         })
 
@@ -166,11 +166,9 @@ export async function updateDrugInventory(
                 location: updates.location,
                 batchNumber: updates.batchNumber,
                 expiryDate: updates.expiryDate ? new Date(updates.expiryDate) : undefined,
-                status:
-                    updates.currentStock !== undefined && updates.minStock !== undefined
-                        ? getStockStatus(updates.currentStock, updates.minStock)
-                        : undefined,
-            },
+                                status: (updates.currentStock !== undefined && updates.minStock !== undefined
+                                    ? getStockStatus(updates.currentStock, updates.minStock)
+                                    : undefined) as any,            },
         })
 
         return { success: true }
@@ -192,7 +190,7 @@ export async function processPrescription(
         await prisma.$transaction(async (tx) => {
             await tx.prescription.update({
                 where: { id: prescriptionId },
-                data: { status: "processing" },
+                data: { status: "processing" as any },
             })
             
             for (const item of dispensedItems) {
@@ -214,7 +212,7 @@ export async function processPrescription(
                     where: { id: drug.id },
                     data: {
                         currentStock: drug.currentStock - item.quantityDispensed,
-                        status: getStockStatus(drug.currentStock - item.quantityDispensed, drug.minStock),
+                        status: getStockStatus(drug.currentStock - item.quantityDispensed, drug.minStock) as any,
                     },
                 })
             }
@@ -231,10 +229,7 @@ export async function completePrescription(prescriptionId: string): Promise<{ su
     try {
         await prisma.prescription.update({
             where: { id: prescriptionId },
-            data: {
-                status: "completed",
-                updatedAt: new Date(),
-            },
+                data: { status: "COMPLETED" as any },
         })
 
         return { success: true }
@@ -264,18 +259,18 @@ export async function getPharmacyStatistics() {
             }),
             prisma.drugInventory.findMany({
                 where: {
-                    status: "critical",
+                    status: "LOW",
                 },
             }),
             prisma.prescription.count({
-                where: { status: "Pending" },
+                where: { status: "PENDING" },
             }),
             prisma.prescription.count({
-                where: { status: "processing" },
+                where: { status: "FILLED" },
             }),
             prisma.prescription.count({
                 where: {
-                    status: "completed",
+                    status: "FILLED",
                     updatedAt: {
                         gte: new Date(new Date().setHours(0, 0, 0, 0)),
                     },
@@ -376,9 +371,11 @@ export async function getPrescriptionTrends() {
         prescriptions.forEach((prescription) => {
             const dateStr = prescription.createdAt.toISOString().split("T")[0]
             if (dailyTrends[dateStr]) {
-                if (prescription.status === "Pending") dailyTrends[dateStr].pending++
-                else if (prescription.status === "processing") dailyTrends[dateStr].processing++
-                else if (prescription.status === "completed") dailyTrends[dateStr].completed++
+                if (prescription.status === "PENDING") {
+                    dailyTrends[dateStr].pending++
+                } else if (prescription.status === "FILLED") {
+                    dailyTrends[dateStr].completed++
+                }
             }
         })
 
