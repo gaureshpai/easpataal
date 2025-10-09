@@ -67,15 +67,15 @@ const ReceptionistDashboard = () => {
       (patient.phone && patient.phone.toLowerCase().includes(searchTerm.toLowerCase())),
   )
 
-  const [isCreateTokenDialogOpen, setIsCreateTokenDialogOpen] = useState(false);
+  const [openTokenDialogs, setOpenTokenDialogs] = useState<Record<string, boolean>>({});
 
   const handleCreatePatientSuccess = () => {
     setIsCreatePatientDialogOpen(false);
     loadPatients();
   };
 
-  const handleCreateTokenSuccess = () => {
-    setIsCreateTokenDialogOpen(false);
+  const handleCreateTokenSuccess = (patientId: string) => {
+    setOpenTokenDialogs((prev) => ({ ...prev, [patientId]: false }));
     loadPatients();
   };
 
@@ -151,7 +151,7 @@ const ReceptionistDashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{patient.phone || "-"}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         <div className="flex items-center space-x-2">
-                          <Dialog open={isCreateTokenDialogOpen} onOpenChange={setIsCreateTokenDialogOpen}>
+                          <Dialog open={openTokenDialogs[patient.id] || false} onOpenChange={(isOpen) => setOpenTokenDialogs((prev) => ({ ...prev, [patient.id]: isOpen }))}>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm" disabled={isPending}>
                                 Create Token
@@ -161,7 +161,7 @@ const ReceptionistDashboard = () => {
                               <DialogHeader>
                                 <DialogTitle>Create Token for {patient.name}</DialogTitle>
                               </DialogHeader>
-                              <TokenForm patientId={patient.id} onSuccess={handleCreateTokenSuccess} onCancel={() => setIsCreateTokenDialogOpen(false)} />
+                              <TokenForm patientId={patient.id} onSuccess={() => handleCreateTokenSuccess(patient.id)} onCancel={() => setOpenTokenDialogs((prev) => ({ ...prev, [patient.id]: false }))} />
                             </DialogContent>
                           </Dialog>
                         </div>
