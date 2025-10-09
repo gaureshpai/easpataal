@@ -202,7 +202,7 @@ export async function createTokenAction(
       const averageWaitTime =
         completedTokensToday.length > 0
           ? totalActualWaitTime / completedTokensToday.length
-          : 15; // Default to 15 minutes if no completed tokens today
+          : 15;
 
       const waitingTimeScore = averageWaitTime * waitingTokens;
 
@@ -287,7 +287,7 @@ export async function createTokenAction(
     console.log("Subscription found:", subscription);
     await sendNotification(
       (subscription.subscription as any)?.subscription,
-      JSON.stringify({ title: "Token Created", body: "Your token is created successfully!" })
+      { title: "Token Created", body: "Your token is created successfully!" }
     );
     revalidatePath("/receptionist");
     revalidatePath("/display");
@@ -337,13 +337,23 @@ export async function updateTokenStatusAction(
       },
     });
 
+    if(token.status =="COMPLETED"){
+      const subscription = token.patient.NotificationSubscription;
+      if (subscription && subscription.subscription) {
+        await sendNotification(
+          subscription.subscription as any,
+          { title: "Token Completed", body: `Your token ${token.tokenNumber} is completed.` }
+        );
+      }
+    }
+
     // Send notification to the patient of the updated token if it's called
     if (token.status === "CALLED") {
       const subscription = token.patient.NotificationSubscription;
       if (subscription && subscription.subscription) {
         await sendNotification(
           subscription.subscription as any,
-          JSON.stringify({ title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` })
+          { title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` }
         );
       }
     }
@@ -376,7 +386,7 @@ export async function updateTokenStatusAction(
             const message = `Your token is ${position} away from being called!`;
             await sendNotification(
               subscription.subscription as any,
-              JSON.stringify({ title: "Token Update", body: message })
+              { title: "Token Update", body: message }
             );
           }
         }
