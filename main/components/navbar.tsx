@@ -47,8 +47,8 @@ export function Navbar() {
     > = {
       admin: [
         {
-          name: "Displays",
-          href: "/admin/displays",
+          name: "Counters",
+          href: "/admin/counters",
           icon: <Settings className="h-4 w-4 mr-2" />,
         },
         {
