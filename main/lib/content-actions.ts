@@ -3,11 +3,6 @@
 import prisma from "@/lib/prisma"
 
 export interface AnalyticsData {
-  displays: {
-    total: number
-    online: number
-    offline: number
-  }
   patients: {
     total: number
     active: number
@@ -122,7 +117,6 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
     const activeCounters = counters.filter(c => c.status === 'ACTIVE').length
 
     const analyticsData: AnalyticsData = {
-      displays: displayStats,
       patients: patientStats,
       tokens: tokenStats,
       departments: departmentStats,
