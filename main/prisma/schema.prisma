@@ -92,8 +92,6 @@ model TokenQueue {
   id                String             @id @default(cuid())
   tokenNumber       Int
   patientId         String
-  patientName       String
-  departmentId      String
   counterId         String?
   status            TokenQueueStatus   @default(WAITING)
   priority          TokenQueuePriority @default(NORMAL)
@@ -108,7 +106,6 @@ model TokenQueue {
   updatedAt DateTime @updatedAt
 
   // Relations
-  department Department @relation(fields: [departmentId], references: [id])
   patient    Patient    @relation(fields: [patientId], references: [id])
   counter    Counter?   @relation(fields: [counterId], references: [id])
 
@@ -131,7 +128,6 @@ model Department {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
-  tokenQueue        TokenQueue[]
   counters          Counter[]
   counterCategories CounterCategory[]
 
