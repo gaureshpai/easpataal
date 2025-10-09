@@ -287,7 +287,7 @@ export async function createTokenAction(
     console.log("Subscription found:", subscription);
     await sendNotification(
       (subscription.subscription as any)?.subscription,
-      { title: "Token Created", body: "Your token is created successfully!" }
+      JSON.stringify({ title: "Token Created", body: "Your token is created successfully!" })
     );
     revalidatePath("/receptionist");
     revalidatePath("/display");
@@ -342,7 +342,7 @@ export async function updateTokenStatusAction(
       if (subscription && subscription.subscription) {
         await sendNotification(
           subscription.subscription as any,
-          { title: "Token Completed", body: `Your token ${token.tokenNumber} is completed.` }
+          JSON.stringify({ title: "Token Completed", body: `Your token ${token.tokenNumber} is completed.` })
         );
       }
     }
@@ -353,7 +353,7 @@ export async function updateTokenStatusAction(
       if (subscription && subscription.subscription) {
         await sendNotification(
           subscription.subscription as any,
-          { title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` }
+          JSON.stringify({ title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` })
         );
       }
     }
@@ -386,7 +386,7 @@ export async function updateTokenStatusAction(
             const message = `Your token is ${position} away from being called!`;
             await sendNotification(
               subscription.subscription as any,
-              { title: "Token Update", body: message }
+              JSON.stringify({ title: "Token Update", body: message })
             );
           }
         }
@@ -498,6 +498,56 @@ export async function getTokenQueueStatsAction(): Promise<
       success: false,
       error: "Failed to calculate token queue statistics",
     };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function callNextTokenAction(
+  doctorId: string
+): Promise<TokenQueueResponse<TokenQueueData>> {
+  try {
+    // 1. Find the counterId associated with the doctorId
+    const doctor = await prisma.user.findUnique({
+      where: { id: doctorId },
+      include: {
+        counter: true,
+      },
+    });
+
+    if (!doctor || !doctor.counter) {
+      return { success: false, error: "Doctor or associated counter not found." };
+    }
+
+    const counterId = doctor.counter.id;
+
+    // 2. Find the next WAITING token for that counterId
+    const nextToken = await prisma.tokenQueue.findFirst({
+      where: {
+        counterId: counterId,
+        status: "WAITING",
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    });
+
+    if (!nextToken) {
+      return { success: false, error: "No waiting tokens found for this counter." };
+    }
+
+    // 3. Update its status to "CALLED" using updateTokenStatusAction
+    const updateResult = await updateTokenStatusAction(nextToken.id, "CALLED");
+
+    if (!updateResult.success || !updateResult.data) {
+      return { success: false, error: updateResult.error || "Failed to update token status." };
+    }
+
+    revalidatePath("/doctor/patients"); // Revalidate the doctor's patient page
+    revalidatePath("/display"); // Revalidate the display page
+
+    return { success: true, data: updateResult.data };
+  } catch (error) {
+    console.error("Error calling next token:", error);
+    return { success: false, error: "Failed to call next token." };
   } finally {
     await prisma.$disconnect();
   }
