@@ -651,14 +651,8 @@ export default function TokenQueuePage() {
                         </Badge>
                       </div>
                       <div className="md:block hidden">
-                        <p className="font-medium text-lg">
-                          {token.patientName}
-                        </p>
                         <p className="text-sm text-gray-600">
                           Patient ID: {token.patientId}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {token.departmentName}
                         </p>
                       </div>
                     </div>
@@ -666,14 +660,8 @@ export default function TokenQueuePage() {
                     <div className="flex flex-col sm:items-end sm:text-right gap-2 sm:gap-0">
                       <div>
                         <div className="block md:hidden">
-                          <p className="font-medium text-lg">
-                            {token.patientName}
-                          </p>
                           <p className="text-sm text-gray-600">
                             Patient ID: {token.patientId}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {token.departmentName}
                           </p>
                         </div>
                         <Badge className={getStatusColor(token.status)}>
