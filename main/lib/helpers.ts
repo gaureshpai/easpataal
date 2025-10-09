@@ -29,6 +29,12 @@ export async function getDepartmentOptions(): Promise<string[]> {
   }
 }
 
+export interface CounterFormData {
+  name: string;
+  location: string;
+  status: "ACTIVE" | "INACTIVE";
+}
+
 export interface UserFormData {
   username: string;
   name: string;

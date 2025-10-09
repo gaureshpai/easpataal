@@ -47,6 +47,11 @@ export function Navbar() {
     > = {
       admin: [
         {
+          name: "Counters",
+          href: "/admin/counters",
+          icon: <Settings className="h-4 w-4 mr-2" />,
+        },
+        {
           name: "Users",
           href: "/admin/Users",
           icon: <User className="h-4 w-4 mr-2" />,
