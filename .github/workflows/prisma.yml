@@ -1,0 +1,25 @@
+name: Sync Prisma Schema
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'main/prisma/schema.prisma'
+
+jobs:
+  sync-schema:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync schema.prisma file
+        run: cp main/prisma/schema.prisma patient/prisma/schema.prisma
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(prisma): sync schema from main to patient"
+          file_pattern: "patient/prisma/schema.prisma"
