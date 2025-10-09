@@ -133,20 +133,6 @@ export async function getDepartmentAnalyticsAction(departmentId: string): Promis
   try {
     const department = await prisma.department.findUnique({
       where: { id: departmentId },
-      include: {
-        tokenQueue: {
-          where: {
-            createdAt: {
-              gte: new Date(new Date().setHours(0, 0, 0, 0)),
-            },
-          },
-        },
-        counters: {
-          where: {
-            status: 'ACTIVE',
-          },
-        },
-      },
     })
 
     if (!department) {
@@ -156,13 +142,28 @@ export async function getDepartmentAnalyticsAction(departmentId: string): Promis
       }
     }
 
+    const tokenQueues = await prisma.tokenQueue.findMany({
+      where: {
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        },
+      },
+    })
+
+    const counters = await prisma.counter.findMany({
+      where: {
+        departmentId: departmentId,
+        status: 'ACTIVE',
+      },
+    })
+
     const analytics = {
       name: department.name,
       location: department.location,
-      totalTokensToday: department.tokenQueue.length,
-      waitingTokens: department.tokenQueue.filter(t => t.status === 'WAITING').length,
-      completedTokens: department.tokenQueue.filter(t => t.status === 'COMPLETED').length,
-      activeCounters: department.counters.length,
+      totalTokensToday: tokenQueues.length,
+      waitingTokens: tokenQueues.filter(t => t.status === 'WAITING').length,
+      completedTokens: tokenQueues.filter(t => t.status === 'COMPLETED').length,
+      activeCounters: counters.length,
       currentOccupancy: department.currentOccupancy,
       capacity: department.capacity,
       occupancyRate: Math.round((department.currentOccupancy / department.capacity) * 100),

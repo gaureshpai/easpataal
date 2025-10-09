@@ -7,9 +7,6 @@ const Navbar = () => {
         <div className="text-white text-lg font-bold">
           <a href="/">E-Aspataal</a>
         </div>
-        <div className="hidden md:flex space-x-4">
-          <a href="/" className="text-gray-300 hover:text-white">Home</a>
-        </div>
         <div className="md:hidden">
           <button className="text-gray-300 hover:text-white focus:outline-none">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
