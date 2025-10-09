@@ -36,7 +36,7 @@ self.addEventListener("message", async (event) => {
     )
     const options = { applicationServerKey, userVisibleOnly: true }
     const subscription = await self.registration.pushManager.subscribe(options)
-    console.log(subscription+'message')
+    console.log(subscription)
     const response = await saveSubscription(subscription)
     console.log(response)
   } catch (err) {
