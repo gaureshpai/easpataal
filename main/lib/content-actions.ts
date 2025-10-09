@@ -237,14 +237,10 @@ export async function getDepartmentAnalyticsAction(departmentId: string): Promis
 
     const analytics = {
       name: department.name,
-      location: department.location,
       totalTokensToday: tokenQueues.length,
       waitingTokens: tokenQueues.filter(t => t.status === 'WAITING').length,
       completedTokens: tokenQueues.filter(t => t.status === 'COMPLETED').length,
       activeCounters: counters.length,
-      currentOccupancy: department.currentOccupancy,
-      capacity: department.capacity,
-      occupancyRate: Math.round((department.currentOccupancy / department.capacity) * 100),
     }
 
     return {

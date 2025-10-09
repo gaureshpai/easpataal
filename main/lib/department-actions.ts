@@ -1,7 +1,28 @@
+import { Department } from "@prisma/client";
 "use server"
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+
+export type DepartmentData = {
+    id: string;
+    name: string;
+    status: "ACTIVE" | "INACTIVE";
+    counters?: any[]; // You might want to define a proper type for counters
+    counterCategories?: any[]; // You might want to define a proper type for counterCategories
+};
+  
+export type DepartmentResponse<T> = {
+    success: boolean;
+    data?: T;
+    error?: string;
+};
+
+export type DepartmentStats = {
+    totalDepartments: number;
+    activeDepartments: number;
+    byStatus: Record<string, number>;
+};
 
 
 export async function createDepartmentAction(formData: FormData): Promise<DepartmentResponse<any>> {
@@ -32,57 +53,23 @@ export async function createDepartmentAction(formData: FormData): Promise<Depart
 export async function updateDepartmentAction(
     id: string,
     formData: FormData,
-): Promise<DepartmentResponse<DepartmentData>> {
+): Promise<DepartmentResponse<any>> {
     try {
         const name = formData.get("name") as string
-        const description = formData.get("description") as string
-        const location = formData.get("location") as string
-        const contactNumber = formData.get("contactNumber") as string
-        const email = formData.get("email") as string
-        const operatingHours = formData.get("operatingHours") as string
-        const status = formData.get("status") as "Active" | "Inactive" | "Maintenance"
-        const capacity = Number.parseInt(formData.get("capacity") as string)
-        const currentOccupancy = Number.parseInt(formData.get("currentOccupancy") as string)
-        const specializations = (formData.get("specializations") as string)
-            .split(",")
-            .map((s) => s.trim())
-            .filter((s) => s.length > 0)
-        const equipment = (formData.get("equipment") as string)
-            .split(",")
-            .map((e) => e.trim())
-            .filter((e) => e.length > 0)
+        const status = formData.get("status") as "ACTIVE" | "INACTIVE"
 
         const department = await prisma.department.update({
             where: { id },
             data: {
                 name,
-                description,
-                location,
-                contactNumber,
-                email,
-                operatingHours,
-                capacity,
-                currentOccupancy,
-                specializations,
-                equipment,
+                status,
             },
         })
 
         const departmentData: DepartmentData = {
             id: department.id,
             name: department.name,
-            description: department.description,
-            location: department.location,
-            contactNumber: department.contactNumber || "",
-            email: department.email || "",
-            operatingHours: department.operatingHours,
-            status: department.status as "Active" | "Inactive" | "Maintenance",
-            capacity: department.capacity,
-            currentOccupancy: department.currentOccupancy,
-            specializations: department.specializations,
-            equipment: department.equipment,
-            createdAt: department.createdAt,
-            updatedAt: department.updatedAt,
+            status: department.status,
         }
 
         revalidatePath("/admin/departments")
@@ -96,7 +83,7 @@ export async function updateDepartmentAction(
     }
 }
 
-export async function deleteDepartmentAction(id: string): Promise<DepartmentResponse<boolean>> {
+export async function deleteDepartmentAction(id: string): Promise<DepartmentResponse<any>> {
     try {
         await prisma.department.delete({
             where: { id },
@@ -113,15 +100,12 @@ export async function deleteDepartmentAction(id: string): Promise<DepartmentResp
     }
 }
 
-export async function getDepartmentStatsAction(): Promise<DepartmentResponse<DepartmentStats>> {
+export async function getDepartmentStatsAction(): Promise<DepartmentResponse<any>> {
     try {
         const departments = await prisma.department.findMany()
 
         const totalDepartments = departments.length
         const activeDepartments = departments.filter((dept) => dept.status === "ACTIVE").length
-        const totalCapacity = departments.reduce((sum, dept) => sum + dept.capacity, 0)
-        const currentOccupancy = departments.reduce((sum, dept) => sum + dept.currentOccupancy, 0)
-        const occupancyRate = totalCapacity > 0 ? (currentOccupancy / totalCapacity) * 100 : 0
 
         const byStatus = departments.reduce(
             (acc, dept) => {
@@ -131,24 +115,10 @@ export async function getDepartmentStatsAction(): Promise<DepartmentResponse<Dep
             {} as Record<string, number>,
         )
 
-        const bySpecialization = departments.reduce(
-            (acc, dept) => {
-                dept.specializations.forEach((spec) => {
-                    acc[spec] = (acc[spec] || 0) + 1
-                })
-                return acc
-            },
-            {} as Record<string, number>,
-        )
-
         const stats: DepartmentStats = {
             totalDepartments,
             activeDepartments,
-            totalCapacity,
-            currentOccupancy,
-            occupancyRate,
             byStatus,
-            bySpecialization,
         }
 
         return { success: true, data: stats }
@@ -157,6 +127,18 @@ export async function getDepartmentStatsAction(): Promise<DepartmentResponse<Dep
         return { success: false, error: "Failed to calculate department statistics" }
     } finally {
         await prisma.$disconnect()
+    }
+}
+
+export async function getAllDepartmentsAction(): Promise<DepartmentResponse<Department[]>> {
+    try {
+        const departments = await prisma.department.findMany();
+        return { success: true, data: departments };
+    } catch (error) {
+        console.error("Error getting all departments:", error);
+        return { success: false, error: "Failed to get all departments" };
+    } finally {
+        await prisma.$disconnect();
     }
 }
 
