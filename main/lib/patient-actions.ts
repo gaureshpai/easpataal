@@ -192,8 +192,7 @@ export async function decactivatePatient(patientId: string) {
         const patient = await prisma.patient.update({
             where: { id: patientId },
             data: {
-                status: "Inactive",
-                updatedAt: new Date(),
+                status: "INACTIVE",
             },
         })
 

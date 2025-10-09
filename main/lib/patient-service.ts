@@ -100,16 +100,16 @@ export async function createPatient(data: CreatePatientData) {
             data: {
                 name: data.name,
                 age: data.age,
-                gender: data.gender,
+                gender: data.gender as any,
                 phone: data.phone,
                 address: data.address,
                 condition: data.condition,
-                bloodType: data.bloodType,
+                bloodType: data.bloodType as any,
                 allergies: data.allergies || [],
                 emergencyContact: data.emergencyContact,
                 emergencyPhone: data.emergencyPhone,
                 vitals: data.vitals || {},
-                status: "Active",
+                status: "ACTIVE",
                 lastVisit: new Date(),
             },
         })
@@ -130,9 +130,11 @@ export async function updatePatient(data: UpdatePatientData) {
             where: { id },
             data: {
                 ...updateData,
+                gender: updateData.gender as any,
+                bloodType: updateData.bloodType as any,
+                status: updateData.status as any,
                 allergies: updateData.allergies || undefined,
                 vitals: updateData.vitals || undefined,
-                updatedAt: new Date(),
             },
         })
 
@@ -149,7 +151,7 @@ export async function decactivatePatient(patientId: string) {
         const patient = await prisma.patient.update({
             where: { id: patientId },
             data: {
-                status: "Inactive",
+                status: "INACTIVE",
                 updatedAt: new Date(),
             },
         })
@@ -372,7 +374,7 @@ export async function searchPatientById(patientId: string): Promise<PatientDetai
                         { id: { contains: patientId, mode: "insensitive" } },
                         { name: { contains: patientId, mode: "insensitive" } },
                     ],
-                    status: "Active",
+                    status: "ACTIVE",
                 },
                 take: 1,
             })
@@ -498,21 +500,21 @@ export async function getPatientStats(patientId: string) {
             prisma.appointment.count({
                 where: {
                     patientId,
-                    status: "Completed",
+                    status: "COMPLETED",
                 },
             }),
 
             prisma.prescription.count({
                 where: {
                     patientId,
-                    status: { in: ["Pending", "Dispensed"] },
+                    status: { in: ["PENDING", "FILLED"] },
                 },
             }),
 
             prisma.appointment.findFirst({
                 where: {
                     patientId,
-                    status: "Completed",
+                    status: "COMPLETED",
                 },
                 orderBy: {
                     date: "desc",
@@ -552,7 +554,7 @@ export async function createAppointment(data: {
                 time: data.time,
                 type: data.type as any,
                 notes: data.notes,
-                status: "Scheduled",
+                status: "SCHEDULED",
             },
         })
 

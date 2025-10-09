@@ -35,7 +35,14 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build:ci
+        run: |
+          # Run Next.js build and capture result
+          npm run build
+          echo "success" > build-status.txt
+
+      - name: Handle build failure
+        if: failure()
+        run: echo "failure" > build-status.txt
 
       - name: Upload build status
         uses: actions/upload-artifact@v4

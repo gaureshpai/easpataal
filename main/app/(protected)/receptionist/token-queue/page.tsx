@@ -201,9 +201,9 @@ export default function TokenQueuePage() {
         setTokens(
           result.data.filter(
             (token) =>
-              token.status === "Waiting" ||
-              token.status === "Called" ||
-              token.status === "In Progress"
+              token.status === "WAITING" ||
+              token.status === "CALLED" ||
+              token.status === "IN_PROGRESS"
           )
         );
       }
@@ -326,15 +326,15 @@ export default function TokenQueuePage() {
 
   const getStatusColor = (status: TokenQueueData["status"]) => {
     switch (status) {
-      case "Waiting":
+      case "WAITING":
         return "bg-yellow-500 text-white";
-      case "Called":
+      case "CALLED":
         return "bg-blue-500 text-white";
-      case "In Progress":
+      case "IN_PROGRESS":
         return "bg-green-500 text-white";
-      case "Completed":
+      case "COMPLETED":
         return "bg-gray-500 text-white";
-      case "Cancelled":
+      case "CANCELLED":
         return "bg-red-500 text-white";
       default:
         return "bg-gray-500 text-white";
@@ -343,9 +343,9 @@ export default function TokenQueuePage() {
 
   const getPriorityColor = (priority: TokenQueueData["priority"]) => {
     switch (priority) {
-      case "Urgent":
+      case "URGENT":
         return "bg-orange-100 text-orange-800 border-orange-200";
-      case "Normal":
+      case "NORMAL":
         return "bg-blue-100 text-blue-800 border-blue-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -501,13 +501,13 @@ export default function TokenQueuePage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select name="priority" defaultValue="Normal">
+                    <Select name="priority" defaultValue="NORMAL">
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Normal">Normal</SelectItem>
-                        <SelectItem value="Urgent">Urgent</SelectItem>
+                        <SelectItem value="NORMAL">Normal</SelectItem>
+                        <SelectItem value="URGENT">Urgent</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -626,8 +626,11 @@ export default function TokenQueuePage() {
               tokens
                 .sort((a, b) => {
                   const priorityOrder = { Urgent: 2, Normal: 1 };
+                  const formatPriority = (priority: "URGENT" | "NORMAL") => {
+                    return (priority.charAt(0).toUpperCase() + priority.slice(1).toLowerCase()) as "Urgent" | "Normal";
+                  };
                   const priorityDiff =
-                    priorityOrder[b.priority] - priorityOrder[a.priority];
+                    priorityOrder[formatPriority(b.priority)] - priorityOrder[formatPriority(a.priority)];
                   return priorityDiff !== 0
                     ? priorityDiff
                     : new Date(a.createdAt).getTime() -
@@ -686,11 +689,11 @@ export default function TokenQueuePage() {
                       </div>
 
                       <div className="flex flex-wrap sm:justify-end gap-2 mt-2">
-                        {token.status === "Waiting" && (
+                        {token.status === "WAITING" && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleUpdateTokenStatus(token.id, "Called")
+                              handleUpdateTokenStatus(token.id, "CALLED")
                             }
                             disabled={isPending}
                           >
@@ -698,11 +701,11 @@ export default function TokenQueuePage() {
                             Call
                           </Button>
                         )}
-                        {token.status === "Called" && (
+                        {token.status === "CALLED" && (
                           <Button
                             size="sm"
                             onClick={() =>
-                              handleUpdateTokenStatus(token.id, "In Progress")
+                              handleUpdateTokenStatus(token.id, "IN_PROGRESS")
                             }
                             disabled={isPending}
                           >
@@ -710,12 +713,12 @@ export default function TokenQueuePage() {
                             Start
                           </Button>
                         )}
-                        {token.status === "In Progress" && (
+                        {token.status === "IN_PROGRESS" && (
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() =>
-                              handleUpdateTokenStatus(token.id, "Completed")
+                              handleUpdateTokenStatus(token.id, "COMPLETED")
                             }
                             disabled={isPending}
                           >

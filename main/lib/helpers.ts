@@ -1,7 +1,6 @@
 import type React from "react";
 import type { Role } from "@prisma/client";
 import type { PatientData } from "./doctor-service";
-import type { OTData } from "./ot-service";
 
 export const roles: Role[] = ["ADMIN", "DOCTOR", "RECEPTIONIST", "PHARMACIST"];
 
@@ -92,20 +91,6 @@ export interface AuthGuardProps {
   children: React.ReactNode;
   allowedRoles?: string[];
   className?: string;
-}
-
-export interface EmergencyAlert1 {
-  id: number;
-  type: "Code Blue" | "Code Red" | "Code Pink" | "Code Yellow";
-  location: string;
-  time: string;
-  severity: "critical" | "high" | "medium";
-  description?: string;
-}
-
-export interface EmergencyAlertProps1 {
-  alerts: EmergencyAlert1[];
-  onDismiss: (id: number) => void;
 }
 
 export interface DrugInventoryItem {

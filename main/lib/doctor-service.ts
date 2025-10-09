@@ -510,7 +510,7 @@ export async function createPrescription(data: CreatePrescriptionData): Promise<
                         drugName: med.drugName,
                         currentStock: 0,
                         minStock: 10,
-                        status: "normal",
+                        status: "NORMAL",
                     },
                 })
             }
@@ -533,7 +533,7 @@ export async function createPrescription(data: CreatePrescriptionData): Promise<
                 patientId: data.patientId,
                 doctorId: doctorId,
                 notes: data.notes,
-                status: "Pending",
+                status: "PENDING",
                 items: {
                     create: data.medications.map((med, index) => ({
                         drugId: drugs[index].id,
@@ -665,7 +665,7 @@ export async function getDoctorPrescriptions(doctorUsername: string, limit = 50)
     }
 }
 
-export async function updateAppointmentStatus(appointmentId: string, status: string): Promise<boolean> {
+export async function updateAppointmentStatus(appointmentId: string, status: any): Promise<boolean> {
     try {
         await prisma.appointment.update({
             where: { id: appointmentId },
