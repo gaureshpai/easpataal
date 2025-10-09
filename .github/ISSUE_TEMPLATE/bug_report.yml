@@ -1,0 +1,74 @@
+name: Bug Report
+description: Report a bug in Easpataal to help us improve hospital efficiency.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug! Your feedback is crucial for improving Easpataal.
+        Please provide as much detail as possible.
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app has the bug?
+      description: Where did you encounter the issue?
+      options:
+        - main (Staff-facing application)
+        - patient (Patient-facing application)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is. What happened and what did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Log in as a [Doctor/Nurse/Admin/etc.]
+        2. Go to the '...' page
+        3. Click on the '....' button
+        4. See the error message or unexpected behavior
+    validations:
+      required: true
+
+  - type: dropdown
+    id: user-role
+    attributes:
+      label: What user role were you using?
+      description: If applicable, which role were you logged in as?
+      options:
+        - Admin
+        - Doctor
+        - Nurse
+        - Pharmacist
+        - Technician
+        - Patient
+        - Not applicable
+
+  - type: textarea
+    id: system
+    attributes:
+      label: System Info (please complete)
+      description: Your browser, OS, and any other relevant details.
+      value: |
+        - OS: [e.g. Windows 11, macOS Sonoma]
+        - Browser: [e.g. Chrome, Firefox, Safari]
+        - Version: [e.g. 22]
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
