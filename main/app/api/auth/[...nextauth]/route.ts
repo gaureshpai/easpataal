@@ -6,7 +6,7 @@ import { compare } from "bcrypt";
 
 const prisma = new PrismaClient();
 
-export const authOptions:AuthOptions = {
+const authOptions:AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
