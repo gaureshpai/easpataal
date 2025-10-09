@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Menu,
   X,
@@ -31,6 +31,7 @@ export function Navbar() {
   const user = session?.user;
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   const getNavLinks = () => {
     const commonLinks = [
@@ -178,7 +179,10 @@ export function Navbar() {
                     <span>Profile & Settings</span>
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {signOut()}}>
+                <DropdownMenuItem onClick={() => {
+                  signOut();
+                  router.push("/");
+                  }}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Logout</span>
                 </DropdownMenuItem>
@@ -233,6 +237,7 @@ export function Navbar() {
               onClick={() => {
                 signOut();
                 setMobileMenuOpen(false);
+                router.push("/");
               }}
             >
               <LogOut className="h-4 w-4 mr-2" />
