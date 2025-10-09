@@ -20,16 +20,24 @@ export default function UserVerification() {
   const [userExists, setUserExists] = useState(true);
 
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
     const userIds = JSON.parse(localStorage.getItem("userId") || "[]");
     const userIdExists = userIds.includes(userId);
     if (userIdExists) {
-        router.push("/");
-        return;
+      router.push("/");
+      return;
     }
   }, []);
 
   const handleVerification = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const res = await verifyUser({ userId, phone });
     if (res) {
       if (localStorage.getItem("userId") === null) {
@@ -40,6 +48,37 @@ export default function UserVerification() {
         userIds.push(userId);
         localStorage.setItem("userId", JSON.stringify(userIds));
       }
+      const check = () => {
+        if (!("serviceWorker" in navigator)) {
+          throw new Error("No Service Worker support!");
+        }
+        if (!("PushManager" in window)) {
+          throw new Error("No Push API Support!");
+        }
+      };
+      const registerServiceWorker = async () => {
+        const swRegistration = await navigator.serviceWorker.register(
+          "/service.js"
+        );
+        navigator.serviceWorker.ready.then((registration) => {
+          const userId = localStorage.getItem("userId");
+          registration.active?.postMessage({ type: "SET_USER_ID", userId });
+        });
+        return swRegistration;
+      };
+      const requestNotificationPermission = async () => {
+        const permission = await window.Notification.requestPermission();
+        if (permission !== "granted") {
+          throw new Error("Permission not granted for Notification");
+        }
+      };
+      const main = async () => {
+        check();
+        await requestNotificationPermission();
+        await registerServiceWorker();
+      };
+
+      main();
       router.push("/");
       return;
     }
