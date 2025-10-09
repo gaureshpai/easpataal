@@ -119,3 +119,47 @@
     @apply bg-background text-foreground;
   }
 }
+
+.hospital-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.pulse-animation {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.emergency-alert {
+  animation: emergency-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes emergency-pulse {
+  from {
+    background-color: rgb(254 242 242);
+    border-color: rgb(239 68 68);
+  }
+  to {
+    background-color: rgb(239 68 68);
+    border-color: rgb(220 38 38);
+    color: white;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-card {
+    @apply mx-2 my-1;
+  }
+
+  .mobile-text {
+    @apply text-sm;
+  }
+}
