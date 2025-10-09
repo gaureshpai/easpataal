@@ -5,13 +5,37 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Star, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Feedback, TokenQueue, Patient, User as PrismaUser } from "@prisma/client";
 
-export function FeedbackList({ anonymousFeedbacks, tokenFeedbacks }) {
+type TokenFeedback = TokenQueue & {
+    patient: Patient;
+    counter: {
+        assignedUser: PrismaUser | null;
+    } | null;
+};
+
+const getCategoryBadgeColor = (category: 'COMPLAINT' | 'SUGGESTION' | 'APPRECIATION') => {
+    switch (category) {
+        case 'COMPLAINT':
+            return 'bg-red-100 text-red-800';
+        case 'SUGGESTION':
+            return 'bg-blue-100 text-blue-800';
+        case 'APPRECIATION':
+            return 'bg-green-100 text-green-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+};
+
+export function FeedbackList({ anonymousFeedbacks, tokenFeedbacks }: {
+    anonymousFeedbacks: Feedback[];
+    tokenFeedbacks: TokenFeedback[];
+}) {
   const [filter, setFilter] = useState("all"); // 'all', 'anonymous', 'token'
 
   const combinedFeedbacks = [
-    ...anonymousFeedbacks.map(f => ({ ...f, type: 'anonymous' })),
-    ...tokenFeedbacks.map(f => ({ ...f, type: 'token' })),
+    ...anonymousFeedbacks.map(f => ({ ...f, type: 'anonymous' as const })),
+    ...tokenFeedbacks.map(f => ({ ...f, type: 'token' as const })),
   ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const filteredFeedbacks = combinedFeedbacks.filter(f => {
@@ -36,7 +60,7 @@ export function FeedbackList({ anonymousFeedbacks, tokenFeedbacks }) {
 
       <div className="space-y-6">
         {filteredFeedbacks.length > 0 ? (
-          filteredFeedbacks.map((feedback) => (
+          filteredFeedbacks.map((feedback: (Feedback & { type: 'anonymous' }) | (TokenFeedback & { type: 'token' })) => (
             <Card key={feedback.id} className="shadow-sm bg-white">
               {feedback.type === 'anonymous' ? (
                 <CardHeader>
@@ -45,11 +69,7 @@ export function FeedbackList({ anonymousFeedbacks, tokenFeedbacks }) {
                           <CardTitle className="text-lg">Anonymous</CardTitle>
                           <CardDescription>{new Date(feedback.createdAt).toLocaleString()}</CardDescription>
                       </div>
-                      <Badge className={`${{
-                          COMPLAINT: 'bg-red-100 text-red-800',
-                          SUGGESTION: 'bg-blue-100 text-blue-800',
-                          APPRECIATION: 'bg-green-100 text-green-800'
-                      }[feedback.category]}`}>{feedback.category}</Badge>
+                      <Badge className={getCategoryBadgeColor(feedback.category)}>{feedback.category}</Badge>
                   </div>
                 </CardHeader>
               ) : (
