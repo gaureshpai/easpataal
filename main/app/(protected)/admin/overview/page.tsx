@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import {
   Card,
   CardContent,
@@ -32,6 +33,11 @@ import {
   Globe,
 } from "lucide-react";
 import { getBadgeTypeColor } from "@/lib/functions";
+
+export const metadata: Metadata = {
+  title: "System Overview - EASPATAAL",
+  description: "Complete overview of all system pages organized by roles.",
+};
 
 export default function AdminOverviewPage() {
   const pagesByRole = {

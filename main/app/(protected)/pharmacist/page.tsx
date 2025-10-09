@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Suspense } from "react"
 import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
@@ -7,6 +8,11 @@ import {
   getPrescriptionTrendsAction,
 } from "@/lib/pharmacist-actions"
 import PharmacyDashboardClient from "@/components/pharmacy-dashboard-client"
+
+export const metadata: Metadata = {
+  title: "Pharmacist Dashboard - EASPATAAL",
+  description: "Pharmacist dashboard for EASPATAAL",
+};
 
 export default async function PharmacistDashboard() {
   const statistics = await getPharmacyStatisticsAction()
