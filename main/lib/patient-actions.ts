@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import sendSMS from "./twillio";
 
 export const getAllPatientsAction = async () => {
   try {
@@ -38,7 +39,7 @@ export const createPatientAction = async (formData: FormData) => {
       },
     });
     console.log("Patient created successfully:", patient);
-
+    sendSMS(patient.phone!, `Hello ${patient.name}, your account has been created successfully in E-ASPATAL Portal`)
     revalidatePath("/receptionist");
     return { success: true, data: patient };
   } catch (error) {
