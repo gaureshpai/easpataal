@@ -79,7 +79,7 @@ const CounterCategoryForm = ({
           <SelectValue placeholder="Select department" />
         </SelectTrigger>
         <SelectContent>
-          {/* <SelectItem value="none">None</SelectItem> */}
+          {/*<SelectItem value="none">None</SelectItem>*/}
           {departments.map((dept) => (
             <SelectItem key={dept.id} value={dept.id}>
               {dept.name}
