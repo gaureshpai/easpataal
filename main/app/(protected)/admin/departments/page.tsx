@@ -215,7 +215,7 @@ export default function DepartmentsPage() {
     })
 
     return (
-        <AuthGuard allowedRoles={["admin", "technician"]} className="container mx-auto p-6 space-y-6">
+        <AuthGuard allowedRoles={["admin"]} className="container mx-auto p-6 space-y-6">
             <Navbar />
 
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
