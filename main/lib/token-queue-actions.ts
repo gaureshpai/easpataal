@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { generateDisplayName } from "@/lib/helpers";
-import webpush from "web-push";
+import { sendNotification } from "@/lib/notifications";
 
 export interface TokenQueueData {
   id: string;
@@ -284,21 +284,10 @@ export async function createTokenAction(
       return { success: true, data: tokenData };
     }
 
-    const vapidKeys = {
-      publicKey:
-        "BCRoHbGjLkhm9x-nh6xqM5xCkEbFNy3iDPlazZ5n0zKkm8lXQEITRpAaciqOBwQSDiW9VtVeDhM0BusA9jmHIuI",
-      privateKey: "AOGOw-mgm-_iImOm3rM9I8I3FRoX9iFhbIfvHJy9sAM",
-    };
-
-    webpush.setVapidDetails(
-      "mailto:myuserid@email.com",
-      vapidKeys.publicKey,
-      vapidKeys.privateKey
-    );
     console.log("Subscription found:", subscription);
-    await webpush.sendNotification(
+    await sendNotification(
       (subscription.subscription as any)?.subscription,
-      "Your token is created successfully!"
+      JSON.stringify({ title: "Token Created", body: "Your token is created successfully!" })
     );
     revalidatePath("/receptionist");
     revalidatePath("/display");
@@ -340,9 +329,59 @@ export async function updateTokenStatusAction(
       where: { id: tokenId },
       data: updateData,
       include: {
-        patient: true,
+        patient: {
+          include: {
+            NotificationSubscription: true,
+          },
+        },
       },
     });
+
+    // Send notification to the patient of the updated token if it's called
+    if (token.status === "CALLED") {
+      const subscription = token.patient.NotificationSubscription;
+      if (subscription && subscription.subscription) {
+        await sendNotification(
+          subscription.subscription as any,
+          JSON.stringify({ title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` })
+        );
+      }
+    }
+
+    // Notification logic for tokens close to being called
+    if (token.counterId) {
+      const waitingTokens = await prisma.tokenQueue.findMany({
+        where: {
+          counterId: token.counterId,
+          status: "WAITING",
+        },
+        orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+        include: {
+          patient: {
+            include: {
+              NotificationSubscription: true,
+            },
+          },
+        },
+      });
+
+      for (let i = 0; i < waitingTokens.length; i++) {
+        const currentWaitingToken = waitingTokens[i];
+        const position = i + 1;
+
+        if ([1, 2, 3, 5].includes(position)) {
+          const subscription =
+            currentWaitingToken.patient.NotificationSubscription;
+          if (subscription && subscription.subscription) {
+            const message = `Your token is ${position} away from being called!`;
+            await sendNotification(
+              subscription.subscription as any,
+              JSON.stringify({ title: "Token Update", body: message })
+            );
+          }
+        }
+      }
+    }
 
     const tokenData: TokenQueueData = {
       id: token.id,
