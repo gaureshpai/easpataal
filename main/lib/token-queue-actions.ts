@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { generateDisplayName } from "@/lib/helpers";
 import { sendNotification } from "@/lib/notifications";
+import sendSMS from "./twillio";
 
 export interface TokenQueueData {
   id: string;
@@ -156,6 +157,17 @@ export async function createTokenAction(
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    const allCompletedTokens = await prisma.tokenQueue.findMany({
+        where: {
+            status: "COMPLETED",
+            actualWaitTime: { not: null },
+            createdAt: { gte: today }
+        }
+    });
+
+    const globalTotalWaitTime = allCompletedTokens.reduce((sum, token) => sum + token.actualWaitTime!, 0);
+    const globalAverageWaitTime = allCompletedTokens.length > 0 ? globalTotalWaitTime / allCompletedTokens.length : 15;
+
     const counters = await prisma.counter.findMany({
       where: {
         categoryId: counterCategoryId,
@@ -202,7 +214,7 @@ export async function createTokenAction(
       const averageWaitTime =
         completedTokensToday.length > 0
           ? totalActualWaitTime / completedTokensToday.length
-          : 15;
+          : globalAverageWaitTime;
 
       const waitingTimeScore = averageWaitTime * waitingTokens;
 
@@ -287,7 +299,15 @@ export async function createTokenAction(
     console.log("Subscription found:", subscription);
     await sendNotification(
       (subscription.subscription as any)?.subscription,
-      JSON.stringify({ title: "Token Created", body: "Your token is created successfully!" })
+      JSON.stringify({
+        title: "Token Created",
+        body: "Your token is created successfully!",
+        badge: "http://10.28.152.189:3000/logo.png",
+        image: "http://10.28.152.189:3000/logo.png",
+        data: {
+          userId: patientId,
+        },
+      })
     );
     revalidatePath("/receptionist");
     revalidatePath("/display");
@@ -310,19 +330,17 @@ export async function updateTokenStatusAction(
 
     if (status === "CALLED") {
       updateData.calledAt = new Date();
-    } else if (status === "COMPLETED" || status === "CANCELLED") {
-      updateData.completedAt = new Date();
-
       const token = await prisma.tokenQueue.findUnique({
         where: { id: tokenId },
       });
-
       if (token) {
         const actualWaitTime = Math.floor(
-          (new Date().getTime() - token.createdAt.getTime()) / (1000 * 60)
+          (updateData.calledAt.getTime() - token.createdAt.getTime()) / (1000 * 60)
         );
         updateData.actualWaitTime = actualWaitTime;
       }
+    } else if (status === "COMPLETED" || status === "CANCELLED") {
+      updateData.completedAt = new Date();
     }
 
     const token = await prisma.tokenQueue.update({
@@ -337,12 +355,20 @@ export async function updateTokenStatusAction(
       },
     });
 
-    if(token.status =="COMPLETED"){
+    if (token.status == "COMPLETED") {
       const subscription = token.patient.NotificationSubscription;
       if (subscription && subscription.subscription) {
         await sendNotification(
           subscription.subscription as any,
-          JSON.stringify({ title: "Token Completed", body: `Your token ${token.tokenNumber} is completed.` })
+          JSON.stringify({
+            title: "Token Completed",
+            body: `Your token ${token.tokenNumber} is completed.`,
+            badge: "http://10.28.152.189:3000/logo.png",
+            image: "http://10.28.152.189:3000/logo.png",
+            data: {
+              userId: token.patientId,
+            },
+          })
         );
       }
     }
@@ -353,7 +379,15 @@ export async function updateTokenStatusAction(
       if (subscription && subscription.subscription) {
         await sendNotification(
           subscription.subscription as any,
-          JSON.stringify({ title: "Your Turn!", body: `Your token ${token.tokenNumber} is now being called.` })
+          JSON.stringify({
+            title: "Your Turn!",
+            body: `Your token ${token.tokenNumber} is now being called.`,
+            badge: "http://10.28.152.189:3000/logo.png",
+            image: "http://10.28.152.189:3000/logo.png",
+            data: {
+              userId: token.patientId,
+            },
+          })
         );
       }
     }
@@ -378,7 +412,9 @@ export async function updateTokenStatusAction(
       for (let i = 0; i < waitingTokens.length; i++) {
         const currentWaitingToken = waitingTokens[i];
         const position = i + 1;
-
+        if(position==3 && currentWaitingToken.patient.phone){
+          sendSMS(currentWaitingToken.patient.phone, `Your token is ${position} away from being called!`)
+        }
         if ([1, 2, 3, 5].includes(position)) {
           const subscription =
             currentWaitingToken.patient.NotificationSubscription;
@@ -386,7 +422,15 @@ export async function updateTokenStatusAction(
             const message = `Your token is ${position} away from being called!`;
             await sendNotification(
               subscription.subscription as any,
-              JSON.stringify({ title: "Token Update", body: message })
+              JSON.stringify({
+                title: "Token Update",
+                body: message,
+                badge: "http://10.28.152.189:3000/logo.png",
+                image: "http://10.28.152.189:3000/logo.png",
+                data: {
+                  userId: currentWaitingToken.patient.id,
+                },
+              })
             );
           }
         }
@@ -516,7 +560,10 @@ export async function callNextTokenAction(
     });
 
     if (!doctor || !doctor.counter) {
-      return { success: false, error: "Doctor or associated counter not found." };
+      return {
+        success: false,
+        error: "Doctor or associated counter not found.",
+      };
     }
 
     const counterId = doctor.counter.id;
@@ -531,14 +578,20 @@ export async function callNextTokenAction(
     });
 
     if (!nextToken) {
-      return { success: false, error: "No waiting tokens found for this counter." };
+      return {
+        success: false,
+        error: "No waiting tokens found for this counter.",
+      };
     }
 
     // 3. Update its status to "CALLED" using updateTokenStatusAction
     const updateResult = await updateTokenStatusAction(nextToken.id, "CALLED");
 
     if (!updateResult.success || !updateResult.data) {
-      return { success: false, error: updateResult.error || "Failed to update token status." };
+      return {
+        success: false,
+        error: updateResult.error || "Failed to update token status.",
+      };
     }
 
     revalidatePath("/doctor/patients"); // Revalidate the doctor's patient page

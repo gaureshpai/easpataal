@@ -77,6 +77,7 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
         status: true,
         createdAt: true,
         completedAt: true,
+        calledAt: true,
         estimatedWaitTime: true,
       },
     })
@@ -105,19 +106,19 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
     }
 
     // Calculate average wait time
-    const completedTokensWithTime = tokens.filter(
-      t => t.status === 'COMPLETED' && t.completedAt && t.createdAt
+    const calledTokensWithTime = tokens.filter(
+      t => t.status === 'CALLED' && t.calledAt && t.createdAt
     )
 
     let averageWaitTime = 0
-    if (completedTokensWithTime.length > 0) {
-      const totalWaitTime = completedTokensWithTime.reduce((sum, token) => {
-        const waitTime = token.completedAt && token.createdAt
-          ? (token.completedAt.getTime() - token.createdAt.getTime()) / 60000 // minutes
+    if (calledTokensWithTime.length > 0) {
+      const totalWaitTime = calledTokensWithTime.reduce((sum, token) => {
+        const waitTime = token.calledAt && token.createdAt
+          ? (token.calledAt.getTime() - token.createdAt.getTime()) / 60000 // minutes
           : 0
         return sum + waitTime
       }, 0)
-      averageWaitTime = Math.round(totalWaitTime / completedTokensWithTime.length)
+      averageWaitTime = Math.round(totalWaitTime / calledTokensWithTime.length)
     }
 
     // Fetch active counters
