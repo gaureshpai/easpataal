@@ -43,9 +43,10 @@ import {
 } from "lucide-react"
 import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
-import { PatientForm } from "@/components/patient-form"
-import { useToast } from "@/hooks/use-toast"
-import { getAllPatientsAction } from "@/lib/patient-actions"
+import PatientForm  from "@/components/patient-form"
+import { useToast } from "@/hooks/use-toast";
+import { getDoctorPatientsAction } from "@/lib/doctor-actions";
+import { useSession } from "next-auth/react";
 import type { PatientData } from "@/lib/doctor-actions"
 import { getStatusColor } from "@/lib/functions"
 import { decactivatePatient } from "@/lib/patient-service"
@@ -61,36 +62,42 @@ export default function DoctorPatientsPage() {
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
 
+  const { data: session } = useSession();
+
   useEffect(() => {
-    loadPatients()
-  }, [])
+    if (session) {
+      loadPatients();
+    }
+  }, [session]);
 
   const loadPatients = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       startTransition(async () => {
-        const result = await getAllPatientsAction(1, 100, searchTerm)
-        if (result.success && result.data) {
-          setPatients(result.data.patients)
-        } else {
-          toast({
-            title: "Error",
-            description: result.error || "Failed to load patients",
-            variant: "destructive",
-          })
+        if (session?.user?.username) {
+          const result = await getDoctorPatientsAction(session.user.username, 100);
+          if (result.success && result.data) {
+            setPatients(result.data);
+          } else {
+            toast({
+              title: "Error",
+              description: result.error || "Failed to load patients",
+              variant: "destructive",
+            });
+          }
         }
-      })
+      });
     } catch (error) {
-      console.error("Error loading patients:", error)
+      console.error("Error loading patients:", error);
       toast({
         title: "Error",
         description: "Failed to load patients",
         variant: "destructive",
-      })
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSearch = async () => {
     await loadPatients()
@@ -442,7 +449,7 @@ export default function DoctorPatientsPage() {
                             </DialogHeader>
                             {editingPatient && (
                               <PatientForm
-                                patient={editingPatient}
+                                patient={editingPatient as any}
                                 onSuccess={handlePatientSuccess}
                                 onCancel={() => {
                                   setShowEditDialog(false)

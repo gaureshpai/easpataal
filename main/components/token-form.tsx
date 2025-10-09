@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react"
 import { getCountersAction } from "@/lib/counter-actions";
 import { Counter, CounterCategory } from "@prisma/client";
 import { createTokenAction } from "@/lib/token-queue-actions";
-import { getCounterCategoriesAction } from "@/lib/counter-category-actions"
+import { getAllCounterCategoriesAction } from "@/lib/counter-category-actions"
 
 interface TokenFormProps {
   patientId: string;
@@ -29,7 +29,7 @@ const TokenForm = ({ patientId, onSuccess, onCancel }: TokenFormProps) => {
   }, []);
 
   const loadCounters = async () => {
-    const result = await getCounterCategoriesAction();
+    const result = await getAllCounterCategoriesAction();
     if (result.success && result.data) {
       setCounters(result.data);
     }
