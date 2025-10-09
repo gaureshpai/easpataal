@@ -16,6 +16,24 @@ export const getAllCountersAction = async () => {
   }
 };
 
+export const getCountersAction = async () => {
+  try {
+    const counters = await prisma.counter.findMany();
+    return { success: true, data: counters };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch counters" };
+  }
+};
+
+export const getCounterCategoryAction = async () => {
+  try {
+    const counters = await prisma.counterCategory.findMany();
+    return { success: true, data: counters };
+  } catch (error) {
+    return { success: false, error: "Failed to fetch counters" };
+  }
+};
+
 export const createCounterAction = async (formData: FormData) => {
   try {
     const name = formData.get("name") as string;
