@@ -376,7 +376,6 @@ const UserCRUDPage = () => {
       ADMIN: "bg-red-100 text-red-800",
       DOCTOR: "bg-blue-100 text-blue-800",
       NURSE: "bg-green-100 text-green-800",
-      TECHNICIAN: "bg-yellow-100 text-yellow-800",
       PHARMACIST: "bg-purple-100 text-purple-800",
     }
     return colors[role] || "bg-gray-100 text-gray-800"
@@ -563,7 +562,7 @@ const UserCRUDPage = () => {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Nurses</CardTitle>
+            <CardTitle className="text-sm font-medium">Receptionists</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">

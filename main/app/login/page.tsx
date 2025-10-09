@@ -1,15 +1,27 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Image from "next/image"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -17,34 +29,41 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Eye, EyeOff, AlertTriangle, Users, Copy, TestTube, Loader2 } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { useToast } from "@/hooks/use-toast"
-import { validateUserCredentialsAction } from "@/lib/user-actions"
+} from "@/components/ui/dialog";
+import {
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  Users,
+  Copy,
+  TestTube,
+  Loader2,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useToast } from "@/hooks/use-toast";
+import { validateUserCredentialsAction } from "@/lib/user-actions";
 
 export const demoCredentials = {
   admin: { username: "admin", password: "admin123" },
   doctor: { username: "dr.smith", password: "doctor123" },
-  nurse: { username: "nurse.jane", password: "nurse123" },
-  technician: { username: "tech.mike", password: "tech123" },
+  receptionist: { username: "receptionist.jane", password: "receptionist123" },
   pharmacist: { username: "pharm.sarah", password: "pharma123" },
-}
+};
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { login } = useAuth()
-  const { toast } = useToast()
+  const router = useRouter();
+  const { login } = useAuth();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     username: "",
     password: "",
     role: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleRoleChange = (role: string) => {
     setFormData({
@@ -52,57 +71,59 @@ export default function LoginPage() {
       role,
       username: "",
       password: "",
-    })
-    setError("")
-  }
+    });
+    setError("");
+  };
 
   const handleDemoCredentialClick = (role: keyof typeof demoCredentials) => {
-    const credentials = demoCredentials[role]
+    const credentials = demoCredentials[role];
     setFormData({
       username: credentials.username,
       password: credentials.password,
       role: role,
-    })
-    setError("")
-    setIsDialogOpen(false)
+    });
+    setError("");
+    setIsDialogOpen(false);
 
     toast({
       title: "Demo credentials loaded",
       description: `Loaded ${credentials.username} credentials`,
-    })
-  }
+    });
+  };
 
   const validateLogin = async (username: string, password: string) => {
     try {
       const isDemoLogin = Object.values(demoCredentials).some(
-        (cred) => cred.username === username && cred.password === password,
-      )
+        (cred) => cred.username === username && cred.password === password
+      );
 
       if (isDemoLogin) {
         const demoRole = Object.entries(demoCredentials).find(
-          ([_, cred]) => cred.username === username && cred.password === password,
-        )?.[0]
+          ([_, cred]) =>
+            cred.username === username && cred.password === password
+        )?.[0];
 
         return {
           success: true,
           user: {
             id: username,
             username: username,
-            name: demoCredentials[demoRole as keyof typeof demoCredentials].username,
+            name: demoCredentials[demoRole as keyof typeof demoCredentials]
+              .username,
             email: `${username}@wenlock.hospital`,
             role: demoRole?.toUpperCase(),
             status: "ACTIVE",
           },
-        }
+        };
       }
-      
-      const result = await validateUserCredentialsAction(username, password)
+
+      const result = await validateUserCredentialsAction(username, password);
 
       if (!result.success || !result.data) {
-        return { success: false, error: result.error || "Invalid credentials" }
+        return { success: false, error: result.error || "Invalid credentials" };
       }
 
-      const user = result.data
+      const user = result.data;
 
       return {
         success: true,
@@ -114,62 +135,68 @@ export default function LoginPage() {
           role: user.role,
           status: user.status,
         },
-      }
+      };
     } catch (error) {
-      console.error("Login validation error:", error)
-      return { success: false, error: "Login validation failed" }
+      console.error("Login validation error:", error);
+      return { success: false, error: "Login validation failed" };
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const result = await validateLogin(formData.username, formData.password)
+      const result = await validateLogin(formData.username, formData.password);
 
       if (!result.success) {
-        throw new Error(result.error || "Invalid credentials")
+        throw new Error(result.error || "Invalid credentials");
       }
 
-      const user = result.user!
+      const user = result.user!;
 
       if (!user.role) {
-        throw new Error("User role is not defined")
+        throw new Error("User role is not defined");
       }
 
-      const userRole = user.role.toLowerCase() as "admin" | "doctor" | "nurse" | "technician" | "pharmacist"
+      const userRole = user.role.toLowerCase() as
+        | "admin"
+        | "doctor"
+        | "receptionist"
+        | "pharmacist";
 
       login({
         id: user.id,
         name: user.username,
         email: user.email || `${user.username}@wenlock.hospital`,
-        role: userRole
-      })
+        role: userRole,
+      });
 
       toast({
         title: "Login successful",
         description: `Welcome back, ${user.username}!`,
-      })
+      });
 
-      router.push(`/${userRole}`)
+      router.push(`/${userRole}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid username or password")
+      setError(
+        err instanceof Error ? err.message : "Invalid username or password"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
+    navigator.clipboard.writeText(text);
     toast({
       title: "Copied to clipboard",
       description: text,
-    })
-  }
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 md:px-6 lg:px-8">
@@ -177,11 +204,21 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <div className="flex items-center justify-center mb-4">
             <div className="bg-black p-2 rounded-md">
-              <Image src="/logo.png" alt="inunity Logo" width={24} height={24} className="invert" />
+              <Image
+                src="/logo.png"
+                alt="inunity Logo"
+                width={24}
+                height={24}
+                className="invert"
+              />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">UDAL - Wenlock Hospital</CardTitle>
-          <CardDescription>Sign in to access the hospital management system</CardDescription>
+          <CardTitle className="text-2xl font-bold">
+            UDAL - Wenlock Hospital
+          </CardTitle>
+          <CardDescription>
+            Sign in to access the hospital management system
+          </CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -189,7 +226,9 @@ export default function LoginPage() {
             {error && (
               <Alert className="border-red-200 bg-red-50">
                 <AlertTriangle className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800">{error}</AlertDescription>
+                <AlertDescription className="text-red-800">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -202,8 +241,7 @@ export default function LoginPage() {
                 <SelectContent>
                   <SelectItem value="admin">Administrator</SelectItem>
                   <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="nurse">Nurse</SelectItem>
-                  <SelectItem value="technician">Technician</SelectItem>
+                  <SelectItem value="receptionist">Receptionist</SelectItem>
                   <SelectItem value="pharmacist">Pharmacist</SelectItem>
                 </SelectContent>
               </Select>
@@ -216,7 +254,9 @@ export default function LoginPage() {
                 type="text"
                 placeholder="Enter your username"
                 value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, username: e.target.value })
+                }
                 required
                 disabled={isLoading}
               />
@@ -230,7 +270,9 @@ export default function LoginPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                   required
                   disabled={isLoading}
                 />
@@ -253,7 +295,12 @@ export default function LoginPage() {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="w-full" disabled={isLoading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={isLoading}
+                >
                   <TestTube className="h-4 w-4 mr-2" />
                   Use Demo Credentials
                 </Button>
@@ -265,59 +312,73 @@ export default function LoginPage() {
                     <Users className="h-5 w-5" />
                     Demo Credentials
                   </DialogTitle>
-                  <DialogDescription>Click on any credential to auto-fill the login form</DialogDescription>
+                  <DialogDescription>
+                    Click on any credential to auto-fill the login form
+                  </DialogDescription>
                 </DialogHeader>
 
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {Object.entries(demoCredentials).map(([role, credentials]) => (
-                    <div
-                      key={role}
-                      className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
-                      onClick={() => handleDemoCredentialClick(role as keyof typeof demoCredentials)}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium capitalize text-gray-900">{credentials.username}</span>
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                          {role.toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="space-y-1 text-sm text-gray-600">
-                        <div className="flex items-center justify-between">
-                          <span>Username: {credentials.username}</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              copyToClipboard(credentials.username)
-                            }}
-                            className="h-6 w-6 p-0"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
+                  {Object.entries(demoCredentials).map(
+                    ([role, credentials]) => (
+                      <div
+                        key={role}
+                        className="border rounded-lg p-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() =>
+                          handleDemoCredentialClick(
+                            role as keyof typeof demoCredentials
+                          )
+                        }
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium capitalize text-gray-900">
+                            {credentials.username}
+                          </span>
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                            {role.toUpperCase()}
+                          </span>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span>Password: {credentials.password}</span>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              copyToClipboard(credentials.password)
-                            }}
-                            className="h-6 w-6 p-0"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
+                        <div className="space-y-1 text-sm text-gray-600">
+                          <div className="flex items-center justify-between">
+                            <span>Username: {credentials.username}</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyToClipboard(credentials.username);
+                              }}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Password: {credentials.password}</span>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyToClipboard(credentials.password);
+                              }}
+                              className="h-6 w-6 p-0"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
 
-            <Button type="submit" className="w-full" disabled={isLoading || !formData.username || !formData.password}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading || !formData.username || !formData.password}
+            >
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -343,5 +404,5 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
