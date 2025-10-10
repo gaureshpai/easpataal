@@ -59,7 +59,7 @@ const PatientForm = ({ patient, onSuccess, onCancel }: PatientFormProps) => {
       formDataObj.append("phone", formData.phone);
       formDataObj.append("age", formData.age);
       formDataObj.append("gender", formData.gender);
-
+      formDataObj.append("bloodType", formData.bloodType);
       const result = patient
         ? await updatePatientAction(patient.id, formDataObj)
         : await createPatientAction(formDataObj);

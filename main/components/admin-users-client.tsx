@@ -66,6 +66,7 @@ import { Navbar } from "@/components/navbar";
 import { useToast } from "@/hooks/use-toast";
 import { roles, type UserFormData } from "@/lib/helpers";
 import { getDepartmentOptions } from "@/lib/department-actions";
+import DepartmentForm from "./department-form";
 
 const UserForm = ({
   isEdit = false,
@@ -175,7 +176,7 @@ const UserForm = ({
             <SelectValue placeholder="Select department" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">None</SelectItem>
+            {/* <SelectItem value="none">None</SelectItem> */}
             {departments.map((dept) => (
               <SelectItem key={dept} value={dept}>
                 {dept}
@@ -235,7 +236,13 @@ const UserManagementPage = () => {
   });
   const [isPending, startTransition] = useTransition();
   const [stats, setStats] = useState<any>(null);
+  const [isCreateDepartmentDialogOpen, setIsCreateDepartmentDialogOpen] = useState(false);
   const { toast } = useToast();
+
+  const handleCreateDepartmentSuccess = () => {
+    setIsCreateDepartmentDialogOpen(false);
+    loadDepartments();
+  };
 
   useEffect(() => {
     loadUsers();
@@ -620,6 +627,24 @@ const UserManagementPage = () => {
                 setIsEditDialogOpen={setIsEditDialogOpen}
                 setIsCreateDialogOpen={setIsCreateDialogOpen}
               />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isCreateDepartmentDialogOpen} onOpenChange={setIsCreateDepartmentDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Department
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-xs md:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Create New Department</DialogTitle>
+                <DialogDescription>
+                  Add a new department to the hospital management system.
+                </DialogDescription>
+              </DialogHeader>
+              <DepartmentForm onSuccess={handleCreateDepartmentSuccess} />
             </DialogContent>
           </Dialog>
         </div>

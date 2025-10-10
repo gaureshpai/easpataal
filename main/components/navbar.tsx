@@ -14,6 +14,7 @@ import {
   Heart,
   Building,
   AudioWaveformIcon,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,10 +34,13 @@ export function Navbar() {
   const router = useRouter();
 
   const getNavLinks = () => {
+    if (!user || !user.role) {
+      return []; // Return empty array if no user or user.role is defined
+    }
     const commonLinks = [
       {
         name: "Dashboard",
-        href: `/${user?.role.toLowerCase()}`,
+        href: `/${user.role.toLowerCase()}`,
         icon: <Home className="h-4 w-4 mr-2" />,
       },
     ];
@@ -57,9 +61,9 @@ export function Navbar() {
           icon: <User className="h-4 w-4 mr-2" />,
         },
         {
-          name: "Overview",
-          href: "/admin/overview",
-          icon: <AudioWaveformIcon className="h-4 w-4 mr-2" />,
+          name: "Feedback",
+          href: "/admin/feedbacks",
+          icon: <MessageSquare className="h-4 w-4 mr-2" />,
         },
       ],
       doctor: [
@@ -98,7 +102,7 @@ export function Navbar() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-4">
             <Link
-              href={`/${user?.role.toLowerCase()}`}
+              href={user && user.role ? `/${user.role.toLowerCase()}` : "/"}
               className="flex items-center space-x-2"
             >
               <div className="bg-white p-1.5 rounded-md">
