@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 
 export default function ReceptionistPage() {
   return (
-    
+    <>
       <Navbar />
       <ReceptionistDashboard />
+    </>
     
   );
 }

@@ -44,9 +44,10 @@ export function Combobox({
   }, [value]);
 
   const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? "" : currentValue;
+    const selectedOption = options.find((option) => option.value === currentValue);
+    const newValue = selectedOption ? selectedOption.value : currentValue; // Use currentValue if not found in options
     onValueChange(newValue);
-    setInputValue(options.find((option) => option.value === newValue)?.label || "");
+    setInputValue(selectedOption?.label || currentValue || "");
     setOpen(false);
   };
 
@@ -57,6 +58,10 @@ export function Combobox({
     }
   };
 
+  const displayValue = value
+    ? options.find((option) => option.value === value)?.label || value
+    : inputValue || placeholder;
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -66,9 +71,7 @@ export function Combobox({
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value
-            ? options.find((option) => option.value === value)?.label
-            : placeholder}
+          {displayValue}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -97,6 +100,14 @@ export function Combobox({
                   {option.label}
                 </CommandItem>
               ))}
+              {inputValue && !options.some(option => option.value === inputValue) && (
+                <CommandItem
+                  value={inputValue}
+                  onSelect={() => handleSelect(inputValue)}
+                >
+                  Create new drug: "{inputValue}"
+                </CommandItem>
+              )}
             </CommandGroup>
           </CommandList>
         </Command>
