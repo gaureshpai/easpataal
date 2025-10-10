@@ -204,8 +204,6 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
       success: false,
       error: "Failed to fetch analytics data",
     }
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
@@ -256,7 +254,5 @@ export async function getDepartmentAnalyticsAction(departmentId: string): Promis
       success: false,
       error: "Failed to fetch department analytics",
     }
-  } finally {
-    await prisma.$disconnect()
   }
 }
