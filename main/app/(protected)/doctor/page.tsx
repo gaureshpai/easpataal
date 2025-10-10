@@ -781,10 +781,6 @@ export default function DoctorDashboard() {
           </div>
 
           <Tabs defaultValue="patients" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 bg-white">
-              <TabsTrigger value="patients">Recent Patients</TabsTrigger>
-            </TabsList>
-
             <TabsContent value="patients" className="space-y-6">
               <Card>
                 <CardHeader>

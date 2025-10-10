@@ -352,8 +352,8 @@ export async function createTokenAction(
       JSON.stringify({
         title: "Token Created",
         body: "Your token is created successfully!",
-        badge: "http://10.28.152.189:3000/logo.png",
-        image: "http://10.28.152.189:3000/logo.png",
+        badge: "https://easpataal-employee.vercel.app/logo.png",
+        image: "https://easpataal-employee.vercel.app/logo.png",
         data: {
           userId: patientId,
         },
@@ -413,8 +413,8 @@ export async function updateTokenStatusAction(
           JSON.stringify({
             title: "Token Completed",
             body: `Your token ${token.tokenNumber} is completed.`,
-            badge: "http://10.28.152.189:3000/logo.png",
-            image: "http://10.28.152.189:3000/logo.png",
+            badge: "https://easpataal-employee.vercel.app/logo.png",
+            image: "https://easpataal-employee.vercel.app/logo.png",
             data: {
               userId: token.patientId,
             },
@@ -432,8 +432,8 @@ export async function updateTokenStatusAction(
           JSON.stringify({
             title: "Your Turn!",
             body: `Your token ${token.tokenNumber} is now being called.`,
-            badge: "http://10.28.152.189:3000/logo.png",
-            image: "http://10.28.152.189:3000/logo.png",
+            badge: "https://easpataal-employee.vercel.app/logo.png",
+            image: "https://easpataal-employee.vercel.app/logo.png",
             data: {
               userId: token.patientId,
             },
@@ -475,8 +475,8 @@ export async function updateTokenStatusAction(
               JSON.stringify({
                 title: "Token Update",
                 body: message,
-                badge: "http://10.28.152.189:3000/logo.png",
-                image: "http://10.28.152.189:3000/logo.png",
+                badge: "https://easpataal-employee.vercel.app/logo.png",
+                image: "https://easpataal-employee.vercel.app/logo.png",
                 data: {
                   userId: currentWaitingToken.patient.id,
                 },

@@ -16,7 +16,7 @@ interface QrCodeDialogProps {
 }
 
 const QrCodeDialog = ({ open, onOpenChange, patientId }: QrCodeDialogProps) => {
-  const qrCodeUrl = `https://easpataal-employee.vercel.app/${patientId}`;
+  const qrCodeUrl = `https://easpataal.vercel.app/${patientId}`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

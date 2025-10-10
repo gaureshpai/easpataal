@@ -20,7 +20,7 @@ const saveSubscription = async subscription => {
     return;
   }
   const subscriptionData = { userIds: userId, subscription }; // Note: server expects userIds array
-  const SERVER_URL = 'http://10.28.152.189:3000/api/save-subscription'; // Using updated IP from ipconfig
+  const SERVER_URL = 'https://easpataal-employee.vercel.app/api/save-subscription'; // Using updated IP from ipconfig
   const response = await fetch(SERVER_URL, {
     method: 'post',
     headers: {

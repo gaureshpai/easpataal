@@ -10,7 +10,9 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "EASPATAAL",
+  metadataBase: new URL("https://easpataal-employee.vercel.app"),
   description: "Hospital queue management system - EASPATAAL",
+  manifest: "/manifest.json", // Add this line for PWA manifest
   openGraph: {
     title: "EASPATAAL",
     description: "Hospital queue management system - EASPATAAL",
@@ -27,6 +29,10 @@ export const metadata: Metadata = {
     type: "website",
   },
 }
+
+export const viewport = {
+  themeColor: "#ffffff",
+};
 
 export default async function RootLayout({
   children,
