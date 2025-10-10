@@ -9,9 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ProfileSelection, TokenCard, TokenCardSkeleton } from "./patient-token-helpers";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { NotificationBell } from "./ui/notification-bell";
 
-export default function PatientClient({setPermision}:any) {
+export default function PatientClient() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -65,7 +64,6 @@ export default function PatientClient({setPermision}:any) {
     }
     const requestNotificationPermission = async () => {
       const permission = await window.Notification.requestPermission()
-        setPermision(permission)
       
     }
     const main = async () => {

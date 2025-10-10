@@ -3,19 +3,14 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
 import PatientTokenClient from '@/component/patient-token-client'
-import { NotificationBell } from '@/component/ui/notification-bell'
 
 function Search() {
-  const searchParams = useSearchParams()
-  const [permissionState, setPermissionState] = useState<NotificationPermission>('default')
+
 
   return (
     <>
-      <PatientTokenClient setPermission={(val: NotificationPermission) => setPermissionState(val)} />
-      <NotificationBell
-        permissionHandle={permissionState}
-        setPermissionHandle={(val: NotificationPermission) => setPermissionState(val)}
-      />
+      <PatientTokenClient  />
+     
     </>
   )
 }
