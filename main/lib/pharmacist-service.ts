@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma"
-import { DrugInventoryStatus } from "@prisma/client"
+import { DrugInventoryStatus, PrescriptionStatus } from "@prisma/client"
 
 export interface DrugInventoryItem {
     id: string
@@ -18,7 +18,7 @@ export interface PrescriptionWithItems {
     id: string
     patient: string
     doctor: string
-    status: string
+    status: PrescriptionStatus // <--- Change this to PrescriptionStatus
     createdAt: string
     items: Array<{
         id: string
