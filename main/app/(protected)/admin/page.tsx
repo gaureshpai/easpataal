@@ -13,13 +13,13 @@ export default async function AdminPage() {
   const { data: analytics, error } = await getSystemAnalyticsAction();
 
   if (error || !analytics) {
-    return ;
+    return;
   }
 
   return (
     <>
-        <Navbar />
-        <AdminPanel analytics={analytics} />
+      <Navbar />
+      <AdminPanel analytics={analytics} />
     </>
   );
 }

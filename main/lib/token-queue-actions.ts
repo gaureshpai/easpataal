@@ -245,7 +245,8 @@ export async function createTokenAction(
     }
 
     let bestCounterId: string | null = null;
-    let minWaitingTimeScore = Infinity;
+    let minQueueLength = Infinity;
+    let minWaitingTimeScore = Infinity; // Reintroduce for tie-breaking
 
     for (const counter of counters) {
       const waitingTokens = counter.tokens.filter(
@@ -266,11 +267,18 @@ export async function createTokenAction(
           ? totalActualWaitTime / completedTokensToday.length
           : globalAverageWaitTime;
 
-      const waitingTimeScore = averageWaitTime * waitingTokens;
+      const currentWaitingTimeScore = averageWaitTime * waitingTokens; // Calculate score for tie-breaking
 
-      if (waitingTimeScore < minWaitingTimeScore) {
-        minWaitingTimeScore = waitingTimeScore;
+      if (waitingTokens < minQueueLength) {
+        minQueueLength = waitingTokens;
         bestCounterId = counter.id;
+        minWaitingTimeScore = currentWaitingTimeScore; // Update score for the new min queue
+      } else if (waitingTokens === minQueueLength) {
+        // Tie-breaker: if queue lengths are equal, use waitingTimeScore
+        if (currentWaitingTimeScore < minWaitingTimeScore) {
+          minWaitingTimeScore = currentWaitingTimeScore;
+          bestCounterId = counter.id;
+        }
       }
     }
 

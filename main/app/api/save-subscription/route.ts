@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
       userIds.map((userId: string) =>
         prisma.notificationSubscription.upsert({
           where: { patientId: userId },
-          update: {subscription: body},
+          update: { subscription: body },
           create: { patientId: userId, subscription: body },
         })
       )

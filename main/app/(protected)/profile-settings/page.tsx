@@ -12,9 +12,7 @@ export default function ProfileSettingsPage() {
   return (
     <>
       <Navbar />
-      
-        <ProfileSettings />
-      
+      <ProfileSettings />
     </>
   );
 }

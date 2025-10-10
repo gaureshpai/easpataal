@@ -49,7 +49,6 @@ import {
   Monitor,
   LayoutGrid,
 } from "lucide-react";
-import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -519,10 +518,7 @@ const CounterCRUDPage = () => {
   );
 
   return (
-    <AuthGuard
-      allowedRoles={["ADMIN"]}
-      className="container mx-auto p-6 space-y-6"
-    >
+    <>
       <Navbar />
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -865,7 +861,7 @@ const CounterCRUDPage = () => {
           </div>
         </CardContent>
       </Card>
-    </AuthGuard>
+    </>
   );
 };
 

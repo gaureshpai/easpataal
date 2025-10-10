@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { DrugInventoryStatus, PrescriptionStatus } from "@prisma/client"
 
 export interface DrugInventoryItem {
     id: string
@@ -17,7 +18,7 @@ export interface PrescriptionWithItems {
     id: string
     patient: string
     doctor: string
-    status: string
+    status: PrescriptionStatus // <--- Change this to PrescriptionStatus
     createdAt: string
     items: Array<{
         id: string
@@ -115,10 +116,10 @@ export async function getPrescriptions(): Promise<PrescriptionWithItems[]> {
     }
 }
 
-function getStockStatus(stock: number, reorderLevel: number): string {
-    if (stock <= reorderLevel * 0.5) return "critical"
-    if (stock <= reorderLevel) return "low"
-    return "available"
+function getStockStatus(stock: number, reorderLevel: number): DrugInventoryStatus {
+    if (stock <= reorderLevel * 0.5) return "LOW"
+    if (stock <= reorderLevel) return "LOW"
+    return "NORMAL"
 }
 
 export async function addDrugToInventory(drugData: {
@@ -190,7 +191,7 @@ export async function processPrescription(
         await prisma.$transaction(async (tx) => {
             await tx.prescription.update({
                 where: { id: prescriptionId },
-                data: { status: "processing" as any },
+                data: { status: "FILLED" as any },
             })
             
             for (const item of dispensedItems) {
@@ -236,6 +237,20 @@ export async function completePrescription(prescriptionId: string): Promise<{ su
     } catch (error) {
         console.error("Error completing prescription:", error)
         return { success: false, error: "Failed to complete prescription" }
+    }
+}
+
+export async function cancelPrescription(prescriptionId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await prisma.prescription.update({
+            where: { id: prescriptionId },
+            data: { status: "CANCELLED" as any },
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error cancelling prescription:", error)
+        return { success: false, error: "Failed to cancel prescription" }
     }
 }
 

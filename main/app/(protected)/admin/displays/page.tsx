@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Copy, ExternalLink, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -124,38 +123,38 @@ export default function AdminDisplaysPage() {
 
   if (error) {
     return (
-      <AuthGuard allowedRoles={["ADMIN"]}>
+      <>
         <Navbar />
         <div className="container mx-auto p-6 space-y-6 text-red-700">
           <h1 className="text-3xl font-bold">Error</h1>
           <p>{error}</p>
         </div>
-      </AuthGuard>
+      </>
     );
   }
 
   return (
-    <div>
-        <Navbar />
-        <div className="container mx-auto p-6 space-y-6">
-          <div className="flex items-center space-x-2">
-            <h1 className="text-3xl font-bold">Display Management</h1>
-          </div>
-
-          <p className="text-gray-600">Manage public display URLs for your counters.</p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {loading ? (
-              [...Array(3)].map((_, i) => <CounterDisplayCardSkeleton key={i} />)
-            ) : counters.length === 0 ? (
-              <p className="col-span-full text-center text-gray-600">No counters found to display.</p>
-            ) : (
-              counters.map((counter) => (
-                <CounterDisplayCard key={counter.id} counter={counter} baseUrl={baseUrl} />
-              ))
-            )}
-          </div>
+    <>
+      <Navbar />
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center space-x-2">
+          <h1 className="text-3xl font-bold">Display Management</h1>
         </div>
-    </div>
+
+        <p className="text-gray-600">Manage public display URLs for your counters.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {loading ? (
+            [...Array(3)].map((_, i) => <CounterDisplayCardSkeleton key={i} />)
+          ) : counters.length === 0 ? (
+            <p className="col-span-full text-center text-gray-600">No counters found to display.</p>
+          ) : (
+            counters.map((counter) => (
+              <CounterDisplayCard key={counter.id} counter={counter} baseUrl={baseUrl} />
+            ))
+          )}
+        </div>
+      </div>
+    </>
   );
 }

@@ -65,6 +65,11 @@ export function Navbar() {
           href: "/admin/feedbacks",
           icon: <MessageSquare className="h-4 w-4 mr-2" />,
         },
+        {
+          name: "Displays",
+          href: "/admin/displays",
+          icon: <Building className="h-4 w-4 mr-2" />
+        }
       ],
       doctor: [
         {

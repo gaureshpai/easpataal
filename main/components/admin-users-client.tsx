@@ -61,7 +61,6 @@ import {
   type UserWithStats,
 } from "@/lib/user-actions";
 import type { Role } from "@prisma/client";
-import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { useToast } from "@/hooks/use-toast";
 import { roles, type UserFormData } from "@/lib/helpers";
@@ -531,9 +530,8 @@ const UserManagementPage = () => {
 
           toast({
             title: "Success",
-            description: `User ${
-              currentStatus === "ACTIVE" ? "deactivated" : "activated"
-            } successfully`,
+            description: `User ${currentStatus === "ACTIVE" ? "deactivated" : "activated"
+              } successfully`,
           });
         } else {
           toast({
@@ -580,13 +578,10 @@ const UserManagementPage = () => {
   };
 
   return (
-    <AuthGuard
-      allowedRoles={["ADMIN"]}
-      className="container mx-auto p-6 space-y-6"
-    >
+    <>
       <Navbar />
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6" />
           <h1 className="text-3xl font-bold">User Management</h1>
@@ -872,7 +867,7 @@ const UserManagementPage = () => {
           />
         </DialogContent>
       </Dialog>
-    </AuthGuard>
+    </>
   );
 };
 
