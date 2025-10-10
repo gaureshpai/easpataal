@@ -29,6 +29,8 @@ const ReceptionistDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [openTokenDialogs, setOpenTokenDialogs] = useState<Record<string, boolean>>({});
   const [isCreatePatientDialogOpen, setIsCreatePatientDialogOpen] = useState(false)
+  const [showEditDialog, setShowEditDialog] = useState(false) // New state for edit dialog
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null) // New state for patient being edited
   const [isPending, startTransition] = useTransition()
   const { toast } = useToast()
 
@@ -76,6 +78,17 @@ const ReceptionistDashboard = () => {
     loadPatients();
   };
 
+  const handleEditPatientSuccess = () => { // New success handler for edit
+    setShowEditDialog(false);
+    setEditingPatient(null);
+    loadPatients();
+  };
+
+  const handleEditPatient = (patient: Patient) => { // New function to handle edit
+    setEditingPatient(patient);
+    setShowEditDialog(true);
+  };
+
   const handleCreateTokenSuccess = (patientId: string) => {
     setOpenTokenDialogs((prev) => ({ ...prev, [patientId]: false }));
     loadPatients();
@@ -95,25 +108,45 @@ const ReceptionistDashboard = () => {
             Refresh
           </Button>
 
-          <Dialog open={isCreatePatientDialogOpen} onOpenChange={setIsCreatePatientDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Patient
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-xs md:max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create New Patient</DialogTitle>
-                <DialogDescription>
-                  Add a new patient to the hospital management system.
-                </DialogDescription>
-              </DialogHeader>
-              <PatientForm onSuccess={handleCreatePatientSuccess} onCancel={() => setIsCreatePatientDialogOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
-      </div>
+                <Dialog open={isCreatePatientDialogOpen} onOpenChange={setIsCreatePatientDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Patient
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-xs md:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Create New Patient</DialogTitle>
+                      <DialogDescription>
+                        Add a new patient to the hospital management system.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <PatientForm onSuccess={handleCreatePatientSuccess} onCancel={() => setIsCreatePatientDialogOpen(false)} />
+                  </DialogContent>
+                </Dialog>
+          
+                <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                  <DialogContent className="max-w-xs md:max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Edit Patient</DialogTitle>
+                      <DialogDescription>
+                        Update the patient's information.
+                      </DialogDescription>
+                    </DialogHeader>
+                    {editingPatient && (
+                      <PatientForm
+                        patient={editingPatient}
+                        onSuccess={handleEditPatientSuccess}
+                        onCancel={() => {
+                          setShowEditDialog(false);
+                          setEditingPatient(null);
+                        }}
+                      />
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>      </div>
 
       <Card>
         <CardHeader>
@@ -169,6 +202,9 @@ const ReceptionistDashboard = () => {
                               <TokenForm patientId={patient.id} onSuccess={() => handleCreateTokenSuccess(patient.id)} onCancel={() => setOpenTokenDialogs((prev) => ({ ...prev, [patient.id]: false }))} />
                             </DialogContent>
                           </Dialog>
+                          <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient)} disabled={isPending}>
+                            Edit
+                          </Button>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

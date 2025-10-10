@@ -65,7 +65,7 @@ const TokenForm = ({ patientId, onSuccess, onCancel }: TokenFormProps) => {
       <div className="space-y-2">
         <Select value={selectedCounter} onValueChange={setSelectedCounter} disabled={isPending}>
           <SelectTrigger>
-            <SelectValue placeholder="Select counter" />
+            <SelectValue placeholder="Select Category" />
           </SelectTrigger>
           <SelectContent>
             {counters.map((counter) => (
