@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react"
-import { AuthGuard } from "@/components/auth-guard"
+
 import { Navbar } from "@/components/navbar"
 import {
   getPharmacyStatisticsAction,
@@ -20,7 +20,7 @@ export default async function PharmacistDashboard() {
   const prescriptionTrends = await getPrescriptionTrendsAction()
 
   return (
-    <AuthGuard allowedRoles={["PHARMACIST","ADMIN"]} className="container mx-auto p-6 space-y-6">
+    
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 
@@ -48,6 +48,6 @@ export default async function PharmacistDashboard() {
           </Suspense>
         </main>
       </div>
-    </AuthGuard>
+    
   )
 }
