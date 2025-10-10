@@ -125,9 +125,9 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
 
         if (password) {
             try {
-                userData.password = password
+                userData.password = bcrypt.hashSync(password, 10)
             } catch (error) {
-                console.warn("Password field not available in schema yet")
+                console.warn(error)
             }
         }
 
@@ -183,7 +183,7 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
 
         if (password && password.trim() !== "") {
             try {
-                updateData.password = password
+                updateData.password = bcrypt.hashSync(password, 10)
             } catch (error) {
                 console.warn("Password field not available in schema yet")
             }
