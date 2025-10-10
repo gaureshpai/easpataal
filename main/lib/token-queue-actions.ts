@@ -41,6 +41,7 @@ export async function getTokensByCounterIdAction(
   counterId: string
 ): Promise<TokenQueueResponse<TokenQueueData[]>> {
   try {
+    await prisma.$connect();
     const tokens = await prisma.tokenQueue.findMany({
       where: {
         counterId: counterId,
@@ -91,6 +92,7 @@ export async function getAllActiveTokensAction(): Promise<
   TokenQueueResponse<TokenQueueData[]>
 > {
   try {
+    await prisma.$connect();
     const tokens = await prisma.tokenQueue.findMany({
       include: {
         patient: true,
@@ -137,6 +139,7 @@ export async function getTokenQueueByDepartmentAction(
   departmentId: string
 ): Promise<TokenQueueResponse<TokenQueueData[]>> {
   try {
+    await prisma.$connect();
     const whereClause = departmentId === "all" ? {} : { departmentId };
 
     const tokens = await prisma.tokenQueue.findMany({
@@ -182,6 +185,7 @@ export async function createTokenAction(
   formData: FormData
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     const patientId = formData.get("patientId") as string;
     const counterCategoryId = formData.get("counterId") as string;
     const priority =
@@ -376,6 +380,7 @@ export async function updateTokenStatusAction(
   status: TokenQueueData["status"]
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     const updateData: any = { status };
 
     if (status === "CALLED") {
@@ -522,6 +527,7 @@ export async function cancelTokenAction(
   tokenId: string
 ): Promise<TokenQueueResponse<boolean>> {
   try {
+    await prisma.$connect();
     await updateTokenStatusAction(tokenId, "CANCELLED");
 
     revalidatePath("/receptionist");
@@ -540,6 +546,7 @@ export async function getTokenQueueStatsAction(): Promise<
   TokenQueueResponse<TokenQueueStats>
 > {
   try {
+    await prisma.$connect();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -601,6 +608,7 @@ export async function callNextTokenAction(
   doctorId: string
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     // 1. Find the counterId associated with the doctorId
     const doctor = await prisma.user.findUnique({
       where: { id: doctorId },
@@ -666,6 +674,7 @@ export async function getDoctorQueueDetailsAction(
   counterId: string
 ): Promise<TokenQueueResponse<DoctorQueueDetails>> {
   try {
+    await prisma.$connect();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -673,7 +682,7 @@ export async function getDoctorQueueDetailsAction(
       where: {
         counterId: counterId,
         status: "CALLED",
-        createdAt: { gte: today },
+        calledAt: { gte: today },
       },
       include: {
         patient: true,
@@ -682,7 +691,7 @@ export async function getDoctorQueueDetailsAction(
     });
 
     const nextTokens = await prisma.tokenQueue.findMany({
-      where: {
+      where: {  
         counterId: counterId,
         status: "WAITING",
         createdAt: { gte: today },

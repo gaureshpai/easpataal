@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export const getAllCounterCategoriesAction = async () => {
   try {
+    await prisma.$connect();
     const counterCategories = await prisma.counterCategory.findMany({
       include: {
         department: true,

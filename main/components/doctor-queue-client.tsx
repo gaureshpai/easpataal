@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { PrescriptionModal } from "./prescription-modal"; // Import the modal
 
 interface DoctorQueueClientProps {
   initialCurrentToken: TokenQueueData | null;
@@ -37,6 +38,7 @@ export default function DoctorQueueClient({
   const [recentTokens, setRecentTokens] =
     useState<TokenQueueData[]>(initialRecentTokens);
   const [loading, setLoading] = useState(false);
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false); // State for modal
   const router = useRouter();
   const { toast } = useToast();
 
@@ -60,6 +62,7 @@ export default function DoctorQueueClient({
   const handleNextToken = async () => {
     setLoading(true);
     const response = await callNextTokenAction(doctorId);
+    console.log(response);
     if (response.success) {
       toast({
         title: "Success",
@@ -101,13 +104,17 @@ export default function DoctorQueueClient({
 
   const handleAddPrescription = () => {
     if (currentToken) {
-      router.push(`/doctor/patients/${currentToken.patientId}/prescribe`);
+      setIsPrescriptionModalOpen(true); // Open the modal
     } else {
       toast({
         title: "Info",
         description: "No current token to add prescription for.",
       });
     }
+  };
+
+  const handlePrescriptionAdded = () => {
+    refreshQueue(); // Refresh the queue after a prescription is added
   };
 
   return (
@@ -221,6 +228,16 @@ export default function DoctorQueueClient({
           </ScrollArea>
         </CardContent>
       </Card>
+
+      {currentToken && (
+        <PrescriptionModal
+          isOpen={isPrescriptionModalOpen}
+          onOpenChange={setIsPrescriptionModalOpen}
+          patientId={currentToken.patientId}
+          doctorUsername={doctorId} // Assuming doctorId is the username
+          onPrescriptionAdded={handlePrescriptionAdded}
+        />
+      )}
     </div>
   );
 }

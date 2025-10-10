@@ -27,6 +27,7 @@ export type DepartmentStats = {
 
 export async function createDepartmentAction(formData: FormData): Promise<DepartmentResponse<any>> {
     try {
+        await prisma.$connect();
         const name = formData.get("name") as string;
 
         if (!name) {
@@ -55,6 +56,7 @@ export async function updateDepartmentAction(
     formData: FormData,
 ): Promise<DepartmentResponse<any>> {
     try {
+        await prisma.$connect();
         const name = formData.get("name") as string
         const status = formData.get("status") as "ACTIVE" | "INACTIVE"
 
@@ -85,6 +87,7 @@ export async function updateDepartmentAction(
 
 export async function deleteDepartmentAction(id: string): Promise<DepartmentResponse<any>> {
     try {
+        await prisma.$connect();
         await prisma.department.delete({
             where: { id },
         })
@@ -102,6 +105,7 @@ export async function deleteDepartmentAction(id: string): Promise<DepartmentResp
 
 export async function getDepartmentStatsAction(): Promise<DepartmentResponse<any>> {
     try {
+        await prisma.$connect();
         const departments = await prisma.department.findMany()
 
         const totalDepartments = departments.length
@@ -132,6 +136,7 @@ export async function getDepartmentStatsAction(): Promise<DepartmentResponse<any
 
 export async function getAllDepartmentsAction(): Promise<DepartmentResponse<Department[]>> {
     try {
+        await prisma.$connect();
         const departments = await prisma.department.findMany();
         return { success: true, data: departments };
     } catch (error) {
@@ -144,6 +149,7 @@ export async function getAllDepartmentsAction(): Promise<DepartmentResponse<Depa
 
 export async function getDepartmentOptions(): Promise<string[]> {
     try {
+        await prisma.$connect();
         const departments = await prisma.department.findMany({
             select: { name: true },
             orderBy: { name: "asc" },
@@ -160,6 +166,7 @@ export async function getDepartmentOptions(): Promise<string[]> {
 
 export const getDepartmentsAction = async () => {
   try {
+    await prisma.$connect();
     const departments = await prisma.department.findMany()
     return { success: true, data: departments }
   } catch (error) {

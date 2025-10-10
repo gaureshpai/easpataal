@@ -12,6 +12,7 @@ export const authOptions:AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
+        await prisma.$connect();
         if (!credentials?.username || !credentials?.password) {
           return null;
         }

@@ -1,5 +1,5 @@
-import { Feedback } from "@prisma/client";
 "use server"
+import { Feedback } from "@prisma/client";
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
@@ -31,6 +31,7 @@ export interface UserActionResponse<T> {
 
 export async function getAllUsersAction(): Promise<UserActionResponse<User[]>> {
     try {
+        await prisma.$connect()
         const users = await prisma.user.findMany({
             orderBy: { createdAt: "desc" },
         })
@@ -46,6 +47,7 @@ export async function getAllUsersAction(): Promise<UserActionResponse<User[]>> {
 
 export async function getUserByIdAction(id: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { id },
         })
@@ -66,6 +68,7 @@ export async function getUserByIdAction(id: string): Promise<UserActionResponse<
 
 export async function createUserAction(formData: FormData): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const username = formData.get("username") as string
         const name = formData.get("name") as string
         const email = formData.get("email") as string
@@ -131,6 +134,7 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
 
 export async function updateUserAction(id: string, formData: FormData): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const name = formData.get("name") as string
         const email = formData.get("email") as string
         const password = formData.get("password") as string
@@ -189,6 +193,7 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
 
 export async function deleteUserAction(id: string): Promise<UserActionResponse<boolean>> {
     try {
+        await prisma.$connect();
         const userDependencies = await checkUserDependencies(id)
 
         if (userDependencies.hasAppointments || userDependencies.hasPrescriptions) {
@@ -218,6 +223,7 @@ export async function deleteUserAction(id: string): Promise<UserActionResponse<b
 
 export async function toggleUserStatusAction(id: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { id },
         })
@@ -250,6 +256,7 @@ export async function toggleUserStatusAction(id: string): Promise<UserActionResp
 
 export async function getUserStatsAction() {
     try {
+        await prisma.$connect();
         const totalUsers = await prisma.user.count({
             where: { status: "ACTIVE" },
         })
@@ -305,6 +312,7 @@ export async function getUserStatsAction() {
 
 async function checkUserDependencies(userId: string) {
     try {
+        await prisma.$connect();
         const [appointmentCount, prescriptionCount] = await Promise.all([
             prisma.appointment.count({
                 where: { doctorId: userId },
@@ -329,6 +337,7 @@ async function checkUserDependencies(userId: string) {
 
 export async function getUserByUsernameAction(username: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { username },
         })
@@ -352,6 +361,7 @@ export async function validateUserCredentialsAction(
     password: string,
 ): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { username },
         })
@@ -386,6 +396,7 @@ export async function validateUserCredentialsAction(
 
 export async function getDoctorsAction(): Promise<UserActionResponse<User[]>> {
     try {
+        await prisma.$connect();
         const doctors = await prisma.user.findMany({
             where: { role: "DOCTOR" },
         });
@@ -412,6 +423,7 @@ export async function getFeedbackAnalytics(): Promise<UserActionResponse<{
   } | null;
 }>> {
   try {
+    await prisma.$connect();
     // 1. Anonymous feedback
     const anonymousFeedbacks = await prisma.feedback.findMany({
       orderBy: {

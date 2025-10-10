@@ -3,6 +3,7 @@ import prisma  from "@/lib/prisma"
 
 export async function GET() {
     try {
+        await prisma.$connect();
         const patients = await prisma.patient.findMany({
             where: { status: "ACTIVE" },
             select: {

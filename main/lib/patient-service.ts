@@ -96,6 +96,7 @@ export interface PatientDetailsData {
 
 export async function createPatient(data: CreatePatientData) {
     try {
+        await prisma.$connect();
         const patient = await prisma.patient.create({
             data: {
                 name: data.name,
@@ -124,6 +125,7 @@ export async function createPatient(data: CreatePatientData) {
 
 export async function updatePatient(data: UpdatePatientData) {
     try {
+        await prisma.$connect();
         const { id, ...updateData } = data
 
         const patient = await prisma.patient.update({
@@ -148,6 +150,7 @@ export async function updatePatient(data: UpdatePatientData) {
 
 export async function decactivatePatient(patientId: string) {
     try {
+        await prisma.$connect();
         const patient = await prisma.patient.update({
             where: { id: patientId },
             data: {
@@ -166,6 +169,7 @@ export async function decactivatePatient(patientId: string) {
 
 export async function getAllPatients(page = 1, limit = 50, search?: string) {
     try {
+        await prisma.$connect();
         const skip = (page - 1) * limit
 
         const where = search
@@ -252,6 +256,7 @@ export async function getAllPatients(page = 1, limit = 50, search?: string) {
 
 export async function getPatientById(patientId: string): Promise<PatientDetailsData | null> {
     try {
+        await prisma.$connect();
         const patient = await prisma.patient.findUnique({
             where: { id: patientId },
             include: {
@@ -365,6 +370,7 @@ export async function getPatientById(patientId: string): Promise<PatientDetailsD
 
 export async function searchPatientById(patientId: string): Promise<PatientDetailsData | null> {
     try {
+        await prisma.$connect();
         let patient = await getPatientById(patientId)
 
         if (!patient) {
@@ -393,6 +399,7 @@ export async function searchPatientById(patientId: string): Promise<PatientDetai
 
 export async function getPatientAppointments(patientId: string, limit = 20) {
     try {
+        await prisma.$connect();
         const appointments = await prisma.appointment.findMany({
             where: { patientId },
             include: {
@@ -427,6 +434,7 @@ export async function getPatientAppointments(patientId: string, limit = 20) {
 
 export async function getPatientMedications(patientId: string, limit = 20) {
     try {
+        await prisma.$connect();
         const prescriptions = await prisma.prescription.findMany({
             where: { patientId },
             include: {
@@ -492,6 +500,7 @@ export async function getPatientMedications(patientId: string, limit = 20) {
 
 export async function getPatientStats(patientId: string) {
     try {
+        await prisma.$connect();
         const [totalAppointments, completedAppointments, activeMedications, lastVisit] = await Promise.all([
             prisma.appointment.count({
                 where: { patientId },
@@ -546,6 +555,7 @@ export async function createAppointment(data: {
     notes?: string
 }) {
     try {
+        await prisma.$connect();
         const appointment = await prisma.appointment.create({
             data: {
                 patientId: data.patientId,
@@ -585,6 +595,7 @@ export async function updatePatientVitals(
     },
 ) {
     try {
+        await prisma.$connect();
         const patient = await prisma.patient.update({
             where: { id: patientId },
             data: {
