@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/component/Navbar";
 import { Toaster } from "@/component/ui/toaster";
 
+
 export const metadata: Metadata = {
   title: "EASPATAAL - Patient",
   metadataBase: new URL("https://easpataal.vercel.app"),
@@ -41,6 +42,7 @@ export default function RootLayout({
         <Navbar />
         <main>{children}</main>
         <Toaster />
+
       </body>
     </html>
   );

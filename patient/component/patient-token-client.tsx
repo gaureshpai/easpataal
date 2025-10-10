@@ -9,8 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { ProfileSelection, TokenCard, TokenCardSkeleton } from "./patient-token-helpers";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import { NotificationBell } from "./ui/notification-bell";
 
-export default function PatientClient() {
+export default function PatientClient({setPermision}:any) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -64,10 +65,8 @@ export default function PatientClient() {
     }
     const requestNotificationPermission = async () => {
       const permission = await window.Notification.requestPermission()
-      console.log(permission)
-      if (permission !== 'granted') {
-        throw new Error('Permission not granted for Notification')
-      }
+        setPermision(permission)
+      
     }
     const main = async () => {
       check()
@@ -252,8 +251,8 @@ export default function PatientClient() {
           </div>
         </div>
   
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-          <div className="max-w-7xl mx-auto flex">
+        <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg h-12">
+          <div className="max-w-7xl mx-auto flex h-full items-center">
             <Button
               onClick={() => setActiveTab("current")}
               variant={activeTab === "current" ? "secondary" : "ghost"}
