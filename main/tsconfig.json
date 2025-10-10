@@ -33,10 +33,13 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "types/**/*.ts",
+    "types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "prisma/seed/*"
+    "prisma/seed/*",
+    "jest.config.ts",
+    "jest.setup.ts",
+    "**/*.test.ts"
   ]
 }
