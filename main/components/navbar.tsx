@@ -76,6 +76,11 @@ export function Navbar() {
           name: "Patients",
           href: "/doctor/patients",
           icon: <User className="h-4 w-4 mr-2" />,
+        },
+        {
+          name: "Queue",
+          href: "/doctor/queue",
+          icon: <AudioWaveformIcon className="h-4 w-4 mr-2" />,
         }
       ],
       pharmacist: [
