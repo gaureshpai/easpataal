@@ -9,7 +9,7 @@ on:
       - 'main/**'
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -36,6 +36,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm Test
+        
       - name: Build
         run: npm run build:ci
 
