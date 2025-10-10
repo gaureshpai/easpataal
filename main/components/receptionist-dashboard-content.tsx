@@ -42,7 +42,7 @@ const ReceptionistDashboard = () => {
       startTransition(async () => {
         const result = await getAllPatientsAction()
         if (result.success && result.data) {
-          setPatients(result.data)
+          setPatients(result.data.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()))
         } else {
           toast({
             title: "Error",
