@@ -50,6 +50,7 @@ export default function PatientClient() {
   }, [toast]);
 
   useEffect(() => {
+
     const check = () => {
       if (!('serviceWorker' in navigator)) {
         throw new Error('No Service Worker support!')
@@ -93,7 +94,6 @@ export default function PatientClient() {
       }
       const fetchTokens = async () => {
         try {
-          setTokensLoading(true);
           const fetchedTokens: Prisma.TokenQueueGetPayload<{
             include: { patient: true };
           }>[] = await getTokenByPatientId(selectedProfile);
