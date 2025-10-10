@@ -36,11 +36,11 @@ export async function getAllUsersAction(): Promise<UserActionResponse<User[]>> {
             orderBy: { createdAt: "desc" },
         })
 
-        await prisma.$disconnect()
+        
         return { success: true, data: users as User[] }
     } catch (error) {
         console.error("Error finding all users:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to fetch users" }
     }
 }
@@ -52,7 +52,7 @@ export async function getUserByIdAction(id: string): Promise<UserActionResponse<
             where: { id },
         })
 
-        await prisma.$disconnect()
+        
 
         if (!user) {
             return { success: false, error: "User not found" }
@@ -61,7 +61,7 @@ export async function getUserByIdAction(id: string): Promise<UserActionResponse<
         return { success: true, data: user as User }
     } catch (error) {
         console.error("Error finding user by ID:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to fetch user" }
     }
 }
@@ -85,7 +85,7 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
         })
 
         if (existingUser) {
-            await prisma.$disconnect()
+            
             return { success: false, error: "Username already exists" }
         }
 
@@ -95,7 +95,7 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
             })
 
             if (existingEmail) {
-                await prisma.$disconnect()
+                
                 return { success: false, error: "Email already exists" }
             }
         }
@@ -121,13 +121,13 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
             data: userData,
         })
 
-        await prisma.$disconnect()
+        
         revalidatePath("/admin/users")
 
         return { success: true, data: user as User }
     } catch (error) {
         console.error("Error creating user:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to create user" }
     }
 }
@@ -154,7 +154,7 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
             })
 
             if (existingEmail) {
-                await prisma.$disconnect()
+                
                 return { success: false, error: "Email already exists" }
             }
         }
@@ -180,13 +180,13 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
             data: updateData,
         })
 
-        await prisma.$disconnect()
+        
         revalidatePath("/admin/users")
 
         return { success: true, data: user as User }
     } catch (error) {
         console.error("Error updating user:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to update user" }
     }
 }
@@ -210,13 +210,13 @@ export async function deleteUserAction(id: string): Promise<UserActionResponse<b
             })
         }
 
-        await prisma.$disconnect()
+        
         revalidatePath("/admin/users")
 
         return { success: true, data: true }
     } catch (error) {
         console.error("Error deleting user:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to delete user" }
     }
 }
@@ -229,7 +229,7 @@ export async function toggleUserStatusAction(id: string): Promise<UserActionResp
         })
 
         if (!user) {
-            await prisma.$disconnect()
+            
             return { success: false, error: "User not found" }
         }
 
@@ -243,13 +243,13 @@ export async function toggleUserStatusAction(id: string): Promise<UserActionResp
             },
         })
 
-        await prisma.$disconnect()
+        
         revalidatePath("/admin/users")
 
         return { success: true, data: updatedUser as User }
     } catch (error) {
         console.error("Error toggling user status:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to update user status" }
     }
 }
@@ -279,7 +279,7 @@ export async function getUserStatsAction() {
             },
         })
 
-        await prisma.$disconnect()
+        
 
         return {
             success: true,
@@ -305,7 +305,7 @@ export async function getUserStatsAction() {
         }
     } catch (error) {
         console.error("Error getting user stats:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to get user statistics" }
     }
 }
@@ -342,7 +342,7 @@ export async function getUserByUsernameAction(username: string): Promise<UserAct
             where: { username },
         })
 
-        await prisma.$disconnect()
+        
 
         if (!user) {
             return { success: false, error: "User not found" }
@@ -351,7 +351,7 @@ export async function getUserByUsernameAction(username: string): Promise<UserAct
         return { success: true, data: user as User }
     } catch (error) {
         console.error("Error finding user by username:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to fetch user" }
     }
 }
@@ -366,7 +366,7 @@ export async function validateUserCredentialsAction(
             where: { username },
         })
 
-        await prisma.$disconnect()
+        
 
         if (!user) {
             return { success: false, error: "Invalid credentials" }
@@ -389,7 +389,7 @@ export async function validateUserCredentialsAction(
         return { success: true, data: user as User }
     } catch (error) {
         console.error("Error validating user credentials:", error)
-        await prisma.$disconnect()
+        
         return { success: false, error: "Failed to validate credentials" }
     }
 }
@@ -401,11 +401,11 @@ export async function getDoctorsAction(): Promise<UserActionResponse<User[]>> {
             where: { role: "DOCTOR" },
         });
 
-        await prisma.$disconnect();
+        ;
         return { success: true, data: doctors as User[] };
     } catch (error) {
         console.error("Error finding doctors:", error);
-        await prisma.$disconnect();
+        ;
         return { success: false, error: "Failed to fetch doctors" };
     }
 }
@@ -499,7 +499,7 @@ export async function getFeedbackAnalytics(): Promise<UserActionResponse<{
       }
     }
 
-    await prisma.$disconnect();
+    ;
     return {
       success: true,
       data: {
@@ -514,7 +514,7 @@ export async function getFeedbackAnalytics(): Promise<UserActionResponse<{
     };
   } catch (error) {
     console.error("Error getting feedback analytics:", error);
-    await prisma.$disconnect();
+    ;
     return { success: false, error: "Failed to fetch feedback analytics" };
   }
 }

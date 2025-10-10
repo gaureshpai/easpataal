@@ -83,8 +83,6 @@ export async function getTokensByCounterIdAction(
   } catch (error) {
     console.error(`Error fetching tokens for counter ${counterId}:`, error);
     return { success: false, error: `Failed to fetch tokens for counter ${counterId}` };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -130,8 +128,6 @@ export async function getAllActiveTokensAction(): Promise<
   } catch (error) {
     console.error("Error fetching active tokens:", error);
     return { success: false, error: "Failed to fetch active tokens" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -176,8 +172,6 @@ export async function getTokenQueueByDepartmentAction(
   } catch (error) {
     console.error("Error fetching tokens by department:", error);
     return { success: false, error: "Failed to fetch tokens by department" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -370,8 +364,6 @@ export async function createTokenAction(
   } catch (error) {
     console.error("Error creating token:", error);
     return { success: false, error: "Failed to create token" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -518,8 +510,6 @@ export async function updateTokenStatusAction(
   } catch (error) {
     console.error("Error updating token status:", error);
     return { success: false, error: "Failed to update token status" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -537,8 +527,6 @@ export async function cancelTokenAction(
   } catch (error) {
     console.error("Error cancelling token:", error);
     return { success: false, error: "Failed to cancel token" };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -599,8 +587,6 @@ export async function getTokenQueueStatsAction(): Promise<
       success: false,
       error: "Failed to calculate token queue statistics",
     };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -659,8 +645,6 @@ export async function callNextTokenAction(
   } catch (error) {
     console.error("Error calling next token:", error);
     return { success: false, error: "Failed to call next token." };
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
@@ -755,7 +739,5 @@ export async function getDoctorQueueDetailsAction(
       success: false,
       error: "Failed to fetch doctor queue details.",
     };
-  } finally {
-    await prisma.$disconnect();
   }
 }

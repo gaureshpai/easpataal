@@ -46,8 +46,6 @@ export async function createDepartmentAction(formData: FormData): Promise<Depart
     } catch (error) {
         console.error("Error creating department:", error);
         return { success: false, error: "Failed to create department" };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
@@ -80,8 +78,6 @@ export async function updateDepartmentAction(
     } catch (error) {
         console.error("Error updating department:", error)
         return { success: false, error: "Failed to update department" }
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
@@ -98,8 +94,6 @@ export async function deleteDepartmentAction(id: string): Promise<DepartmentResp
     } catch (error) {
         console.error("Error deleting department:", error)
         return { success: false, error: "Failed to delete department" }
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
@@ -129,8 +123,6 @@ export async function getDepartmentStatsAction(): Promise<DepartmentResponse<any
     } catch (error) {
         console.error("Error calculating department stats:", error)
         return { success: false, error: "Failed to calculate department statistics" }
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
@@ -142,8 +134,6 @@ export async function getAllDepartmentsAction(): Promise<DepartmentResponse<Depa
     } catch (error) {
         console.error("Error getting all departments:", error);
         return { success: false, error: "Failed to get all departments" };
-    } finally {
-        await prisma.$disconnect();
     }
 }
 
@@ -159,8 +149,6 @@ export async function getDepartmentOptions(): Promise<string[]> {
     } catch (error) {
         console.error("Error getting department options:", error)
         return []
-    } finally {
-        await prisma.$disconnect()
     }
 }
 
