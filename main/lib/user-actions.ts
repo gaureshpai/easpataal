@@ -23,6 +23,20 @@ export interface UpdateUserData {
     role?: Role
     status?: string
 }
+
+export interface UserWithStats {
+    id: string
+    username: string
+    name: string
+    email?: string | null
+    password?: string
+    role: Role
+    department?: string | null
+    status: string
+    createdAt: Date
+    updatedAt: Date
+}
+
 export interface UserActionResponse<T> {
     success: boolean
     data?: T
