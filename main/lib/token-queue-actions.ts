@@ -37,6 +37,56 @@ export interface TokenQueueResponse<T> {
   error?: string;
 }
 
+export async function getTokensByCounterIdAction(
+  counterId: string
+): Promise<TokenQueueResponse<TokenQueueData[]>> {
+  try {
+    const tokens = await prisma.tokenQueue.findMany({
+      where: {
+        counterId: counterId,
+        status: { in: ["WAITING", "CALLED"] },
+      },
+      include: {
+        patient: true,
+        counter: {
+          include: {
+            department: true,
+          },
+        },
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    });
+
+    const tokenData: TokenQueueData[] = tokens.map((token) => ({
+      id: token.id,
+      tokenNumber: token.tokenNumber,
+      patientId: token.patientId,
+      patientName: token.patient.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
+      departmentId: token.counter?.departmentId || "N/A",
+      departmentName: token.counter?.department?.name || "N/A",
+      status: token.status as TokenQueueData["status"],
+      priority: token.priority as TokenQueueData["priority"],
+      estimatedWaitTime: token.estimatedWaitTime,
+      actualWaitTime: token.actualWaitTime,
+      createdAt: token.createdAt,
+      updatedAt: token.updatedAt,
+      calledAt: token.calledAt,
+      completedAt: token.completedAt,
+    }));
+
+    return { success: true, data: tokenData };
+  } catch (error) {
+    console.error(`Error fetching tokens for counter ${counterId}:`, error);
+    return { success: false, error: `Failed to fetch tokens for counter ${counterId}` };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 export async function getAllActiveTokensAction(): Promise<
   TokenQueueResponse<TokenQueueData[]>
 > {

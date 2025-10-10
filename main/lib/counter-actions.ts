@@ -3,6 +3,26 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+export const getCounterByIdAction = async (id: string) => {
+  try {
+    const counter = await prisma.counter.findUnique({
+      where: { id },
+      include: {
+        assignedUser: true,
+        category: true,
+        department: true, // Include department for display page
+      },
+    });
+    if (!counter) {
+      return { success: false, error: "Counter not found" };
+    }
+    return { success: true, data: counter };
+  } catch (error) {
+    console.error(`Error fetching counter ${id}:`, error);
+    return { success: false, error: "Failed to fetch counter" };
+  }
+};
+
 export const getAllCountersAction = async () => {
   try {
     const counters = await prisma.counter.findMany({
