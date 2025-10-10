@@ -37,6 +37,56 @@ export interface TokenQueueResponse<T> {
   error?: string;
 }
 
+export async function getTokensByCounterIdAction(
+  counterId: string
+): Promise<TokenQueueResponse<TokenQueueData[]>> {
+  try {
+    const tokens = await prisma.tokenQueue.findMany({
+      where: {
+        counterId: counterId,
+        status: { in: ["WAITING", "CALLED"] },
+      },
+      include: {
+        patient: true,
+        counter: {
+          include: {
+            department: true,
+          },
+        },
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+    });
+
+    const tokenData: TokenQueueData[] = tokens.map((token) => ({
+      id: token.id,
+      tokenNumber: token.tokenNumber,
+      patientId: token.patientId,
+      patientName: token.patient.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
+      departmentId: token.counter?.departmentId || "N/A",
+      departmentName: token.counter?.department?.name || "N/A",
+      status: token.status as TokenQueueData["status"],
+      priority: token.priority as TokenQueueData["priority"],
+      estimatedWaitTime: token.estimatedWaitTime,
+      actualWaitTime: token.actualWaitTime,
+      createdAt: token.createdAt,
+      updatedAt: token.updatedAt,
+      calledAt: token.calledAt,
+      completedAt: token.completedAt,
+    }));
+
+    return { success: true, data: tokenData };
+  } catch (error) {
+    console.error(`Error fetching tokens for counter ${counterId}:`, error);
+    return { success: false, error: `Failed to fetch tokens for counter ${counterId}` };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
 export async function getAllActiveTokensAction(): Promise<
   TokenQueueResponse<TokenQueueData[]>
 > {
@@ -302,8 +352,8 @@ export async function createTokenAction(
       JSON.stringify({
         title: "Token Created",
         body: "Your token is created successfully!",
-        badge: "http://10.28.152.189:3000/logo.png",
-        image: "http://10.28.152.189:3000/logo.png",
+        badge: "https://easpataal-employee.vercel.app/logo.png",
+        image: "https://easpataal-employee.vercel.app/logo.png",
         data: {
           userId: patientId,
         },
@@ -330,19 +380,17 @@ export async function updateTokenStatusAction(
 
     if (status === "CALLED") {
       updateData.calledAt = new Date();
-    } else if (status === "COMPLETED" || status === "CANCELLED") {
-      updateData.completedAt = new Date();
-
       const token = await prisma.tokenQueue.findUnique({
         where: { id: tokenId },
       });
-
       if (token) {
         const actualWaitTime = Math.floor(
-          (new Date().getTime() - token.createdAt.getTime()) / (1000 * 60)
+          (updateData.calledAt.getTime() - token.createdAt.getTime()) / (1000 * 60)
         );
         updateData.actualWaitTime = actualWaitTime;
       }
+    } else if (status === "COMPLETED" || status === "CANCELLED") {
+      updateData.completedAt = new Date();
     }
 
     const token = await prisma.tokenQueue.update({
@@ -365,8 +413,8 @@ export async function updateTokenStatusAction(
           JSON.stringify({
             title: "Token Completed",
             body: `Your token ${token.tokenNumber} is completed.`,
-            badge: "http://10.28.152.189:3000/logo.png",
-            image: "http://10.28.152.189:3000/logo.png",
+            badge: "https://easpataal-employee.vercel.app/logo.png",
+            image: "https://easpataal-employee.vercel.app/logo.png",
             data: {
               userId: token.patientId,
             },
@@ -384,8 +432,8 @@ export async function updateTokenStatusAction(
           JSON.stringify({
             title: "Your Turn!",
             body: `Your token ${token.tokenNumber} is now being called.`,
-            badge: "http://10.28.152.189:3000/logo.png",
-            image: "http://10.28.152.189:3000/logo.png",
+            badge: "https://easpataal-employee.vercel.app/logo.png",
+            image: "https://easpataal-employee.vercel.app/logo.png",
             data: {
               userId: token.patientId,
             },
@@ -427,8 +475,8 @@ export async function updateTokenStatusAction(
               JSON.stringify({
                 title: "Token Update",
                 body: message,
-                badge: "http://10.28.152.189:3000/logo.png",
-                image: "http://10.28.152.189:3000/logo.png",
+                badge: "https://easpataal-employee.vercel.app/logo.png",
+                image: "https://easpataal-employee.vercel.app/logo.png",
                 data: {
                   userId: currentWaitingToken.patient.id,
                 },

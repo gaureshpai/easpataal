@@ -6,7 +6,9 @@ import { Toaster } from "@/component/ui/toaster";
 
 export const metadata: Metadata = {
   title: "EASPATAAL - Patient",
+  metadataBase: new URL("https://easpataal.vercel.app"),
   description: "Patient portal for EASPATAAL",
+  manifest: "/manifest.json", // Add this line for PWA manifest
   openGraph: {
     title: "EASPATAAL - Patient",
     description: "Patient portal for EASPATAAL",
@@ -23,6 +25,10 @@ export const metadata: Metadata = {
     type: "website",
   },
 }
+
+export const viewport = {
+  themeColor: "#ffffff",
+};
 
 export default function RootLayout({
   children,
