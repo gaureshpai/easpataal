@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { FileText, Search, CheckCircle } from "lucide-react"
-import { processPrescriptionAction, completePrescriptionAction } from "@/lib/pharmacist-actions"
+import { processPrescriptionAction, completePrescriptionAction, cancelPrescriptionAction } from "@/lib/pharmacist-actions"
 import { useToast } from "@/hooks/use-toast"
 import { getPrescriptionStatusColor } from "@/lib/functions"
 
@@ -35,7 +35,7 @@ interface Prescription {
   id: string
   patient: string
   doctor: string
-  status: string
+  status: "PENDING" | "FILLED" | "CANCELLED"; // Use Prisma enum types
   createdAt: string
   items: PrescriptionItem[]
   totalAmount?: number
@@ -47,7 +47,7 @@ interface OrdersClientProps {
 
 export default function OrdersClient({ prescriptions }: OrdersClientProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState("all")
+  const [activeTab, setActiveTab] = useState<"all" | "PENDING" | "FILLED" | "CANCELLED">("all") // Use Prisma enum types
   const [isProcessingDialogOpen, setIsProcessingDialogOpen] = useState(false)
   const [currentPrescription, setCurrentPrescription] = useState<Prescription | null>(null)
   const [dispensedItems, setDispensedItems] = useState<
@@ -128,6 +128,31 @@ export default function OrdersClient({ prescriptions }: OrdersClientProps) {
     }
   }
 
+  const handleCancelPrescription = async (prescriptionId: string) => {
+    try {
+      const result = await cancelPrescriptionAction(prescriptionId)
+
+      if (result.success) {
+        toast({
+          title: "Prescription cancelled",
+          description: "The prescription has been marked as cancelled.",
+        })
+      } else {
+        toast({
+          title: "Error cancelling prescription",
+          description: result.error || "An error occurred while cancelling the prescription.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error cancelling prescription",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const updateDispensedQuantity = (itemId: string, quantity: number) => {
     setDispensedItems((prev) =>
       prev.map((item) => (item.itemId === itemId ? { ...item, quantityDispensed: quantity } : item)),
@@ -154,12 +179,12 @@ export default function OrdersClient({ prescriptions }: OrdersClientProps) {
           </div>
         </CardHeader>
         <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "PENDING" | "FILLED" | "CANCELLED" | "all")} className="space-y-4">
             <TabsList className="grid w-full grid-cols-1 mb-16 md:grid-cols-4">
               <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="Pending">Pending</TabsTrigger>
-              <TabsTrigger value="processing">Processing</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="PENDING">Pending</TabsTrigger>
+              <TabsTrigger value="FILLED">Filled</TabsTrigger>
+              <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
             </TabsList>
 
             <TabsContent value={activeTab} className="space-y-4">
@@ -196,21 +221,30 @@ export default function OrdersClient({ prescriptions }: OrdersClientProps) {
                     </div>
 
                     <div className="flex space-x-2">
-                      {prescription.status === "Pending" && (
-                        <Button size="sm" onClick={() => handleStartProcessing(prescription)}>
-                          Start Processing
-                        </Button>
+                      {prescription.status === "PENDING" && (
+                        <>
+                          <Button size="sm" onClick={() => handleStartProcessing(prescription)}>
+                            Mark as Filled
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => handleCancelPrescription(prescription.id)}>
+                            Cancel
+                          </Button>
+                        </>
                       )}
-                      {prescription.status === "processing" && (
-                        <Button size="sm" variant="outline" onClick={() => handleCompletePrescription(prescription.id)}>
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Complete
-                        </Button>
+                      {prescription.status === "FILLED" && (
+                        <>
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Filled
+                          </Badge>
+                          <Button size="sm" variant="destructive" onClick={() => handleCancelPrescription(prescription.id)}>
+                            Cancel
+                          </Button>
+                        </>
                       )}
-                      {prescription.status === "completed" && (
-                        <Badge variant="outline" className="text-green-600 border-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Completed
+                      {prescription.status === "CANCELLED" && (
+                        <Badge variant="outline" className="text-red-600 border-red-600">
+                          Cancelled
                         </Badge>
                       )}
                     </div>

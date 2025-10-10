@@ -16,7 +16,7 @@ export default async function AdminFeedbackPage() {
   return (
     <>
       <Navbar />
-      <div className="p-4 sm:p-6 md:p-8 max-w-7xl">
+      <div className="p-4 sm:p-6 md:p-8 mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Patient Feedback</h1>
           <p className="text-gray-600 mt-1">Review and address feedback submitted by patients.</p>

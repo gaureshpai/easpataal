@@ -581,7 +581,7 @@ const UserManagementPage = () => {
     <>
       <Navbar />
 
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4">
         <div className="flex items-center space-x-2">
           <Users className="h-6 w-6" />
           <h1 className="text-3xl font-bold">User Management</h1>

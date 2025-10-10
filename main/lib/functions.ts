@@ -207,13 +207,13 @@ export const getSurgeryStatusColor = (status: string) => {
 };
 
 export const getPrescriptionStatusColor = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "pending":
+  switch (status) {
+    case "PENDING":
       return "bg-yellow-500";
-    case "processing":
-      return "bg-blue-500";
-    case "completed":
+    case "FILLED":
       return "bg-green-500";
+    case "CANCELLED":
+      return "bg-red-500";
     default:
       return "bg-gray-500";
   }

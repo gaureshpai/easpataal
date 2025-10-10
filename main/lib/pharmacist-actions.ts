@@ -11,6 +11,7 @@ import {
     getPharmacyStatistics,
     getTopMedications,
     getPrescriptionTrends,
+    cancelPrescription,
 } from "./pharmacist-service"
 
 export async function getDrugInventoryAction() {
@@ -38,6 +39,13 @@ export async function processPrescriptionAction(
 
 export async function completePrescriptionAction(prescriptionId: string) {
     const result = await completePrescription(prescriptionId)
+    revalidatePath("/pharmacist")
+    revalidatePath("/pharmacist/orders")
+    return result
+}
+
+export async function cancelPrescriptionAction(prescriptionId: string) {
+    const result = await cancelPrescription(prescriptionId)
     revalidatePath("/pharmacist")
     revalidatePath("/pharmacist/orders")
     return result
