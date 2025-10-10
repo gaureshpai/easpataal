@@ -39,7 +39,7 @@ export const createPatientAction = async (formData: FormData) => {
       },
     });
     console.log("Patient created successfully:", patient);
-    sendSMS(patient.phone!, `Hello ${patient.name}, your account has been created successfully in E-ASPATAL Portal`)
+    sendSMS(patient.phone!, `Hello ${patient.name}, your account has been created successfully in EASPATAL Portal`)
     revalidatePath("/receptionist");
     return { success: true, data: patient };
   } catch (error) {
