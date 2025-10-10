@@ -72,12 +72,9 @@ export function PrescriptionModal({
   };
 
   const handleDrugSearch = async (query: string) => {
-    if (query.length < 2) {
-      setDrugOptions([]);
-      return;
-    }
     try {
       const drugs = await getAllDrugsForSelection(query);
+      console.log("Fetched drugs:", drugs); // Add this line
       setDrugOptions(drugs.map(drug => ({ label: drug.drugName, value: drug.drugName })));
     } catch (error) {
       console.error("Error searching drugs:", error);
