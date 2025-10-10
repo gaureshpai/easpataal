@@ -4,6 +4,7 @@ import prisma from './prisma'; // Adjust path if necessary
 
 export async function getTokenDisplayData(counterId: string) {
   try {
+    await prisma.$connect();
     // Fetch the counter to ensure it exists and get its name
     const counter = await prisma.counter.findUnique({
       where: { id: counterId },

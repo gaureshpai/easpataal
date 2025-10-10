@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 export const getCounterByIdAction = async (id: string) => {
   try {
+    await prisma.$connect();
     const counter = await prisma.counter.findUnique({
       where: { id },
       include: {
@@ -25,6 +26,7 @@ export const getCounterByIdAction = async (id: string) => {
 
 export const getAllCountersAction = async () => {
   try {
+    await prisma.$connect();
     const counters = await prisma.counter.findMany({
       include: {
         assignedUser: true,
@@ -39,6 +41,7 @@ export const getAllCountersAction = async () => {
 
 export const getCountersAction = async () => {
   try {
+    await prisma.$connect();
     const counters = await prisma.counter.findMany();
     return { success: true, data: counters };
   } catch (error) {
@@ -48,6 +51,7 @@ export const getCountersAction = async () => {
 
 export const getCounterCategoryAction = async () => {
   try {
+    await prisma.$connect();
     const counters = await prisma.counterCategory.findMany();
     return { success: true, data: counters };
   } catch (error) {
@@ -57,6 +61,7 @@ export const getCounterCategoryAction = async () => {
 
 export const createCounterAction = async (formData: FormData) => {
   try {
+    await prisma.$connect();
     const name = formData.get("name") as string;
     const location = formData.get("location") as string;
     const status = formData.get("status") as string;
@@ -106,6 +111,7 @@ export const createCounterAction = async (formData: FormData) => {
 
 export const updateCounterAction = async (id: string, formData: FormData) => {
   try {
+    await prisma.$connect();
     const name = formData.get("name") as string;
     const location = formData.get("location") as string;
     const status = formData.get("status") as string;
@@ -177,6 +183,7 @@ export const updateCounterAction = async (id: string, formData: FormData) => {
 
 export const deleteCounterAction = async (id: string) => {
   try {
+    await prisma.$connect();
     await prisma.$transaction(async (tx) => {
       const counter = await tx.counter.findUnique({ where: { id } });
       if (counter?.assignedUserId) {

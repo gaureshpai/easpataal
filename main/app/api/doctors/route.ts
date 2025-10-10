@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma"
 
 export async function GET() {
     try {
+        await prisma.$connect();
         const doctors = await prisma.user.findMany({
             where: {
                 role: "DOCTOR",

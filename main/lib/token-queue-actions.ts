@@ -41,6 +41,7 @@ export async function getTokensByCounterIdAction(
   counterId: string
 ): Promise<TokenQueueResponse<TokenQueueData[]>> {
   try {
+    await prisma.$connect();
     const tokens = await prisma.tokenQueue.findMany({
       where: {
         counterId: counterId,
@@ -91,6 +92,7 @@ export async function getAllActiveTokensAction(): Promise<
   TokenQueueResponse<TokenQueueData[]>
 > {
   try {
+    await prisma.$connect();
     const tokens = await prisma.tokenQueue.findMany({
       include: {
         patient: true,
@@ -137,6 +139,7 @@ export async function getTokenQueueByDepartmentAction(
   departmentId: string
 ): Promise<TokenQueueResponse<TokenQueueData[]>> {
   try {
+    await prisma.$connect();
     const whereClause = departmentId === "all" ? {} : { departmentId };
 
     const tokens = await prisma.tokenQueue.findMany({
@@ -182,6 +185,7 @@ export async function createTokenAction(
   formData: FormData
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     const patientId = formData.get("patientId") as string;
     const counterCategoryId = formData.get("counterId") as string;
     const priority =
@@ -384,6 +388,7 @@ export async function updateTokenStatusAction(
   status: TokenQueueData["status"]
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     const updateData: any = { status };
 
     if (status === "CALLED") {
@@ -417,7 +422,7 @@ export async function updateTokenStatusAction(
       const subscription = token.patient.NotificationSubscription;
       if (subscription && subscription.subscription) {
         await sendNotification(
-          subscription.subscription as any,
+          (subscription.subscription as any)?.subscription,
           JSON.stringify({
             title: "Token Completed",
             body: `Your token ${token.tokenNumber} is completed.`,
@@ -436,7 +441,7 @@ export async function updateTokenStatusAction(
       const subscription = token.patient.NotificationSubscription;
       if (subscription && subscription.subscription) {
         await sendNotification(
-          subscription.subscription as any,
+          (subscription.subscription as any)?.subscription,
           JSON.stringify({
             title: "Your Turn!",
             body: `Your token ${token.tokenNumber} is now being called.`,
@@ -479,7 +484,7 @@ export async function updateTokenStatusAction(
           if (subscription && subscription.subscription) {
             const message = `Your token is ${position} away from being called!`;
             await sendNotification(
-              subscription.subscription as any,
+              (subscription.subscription as any)?.subscription,
               JSON.stringify({
                 title: "Token Update",
                 body: message,
@@ -530,6 +535,7 @@ export async function cancelTokenAction(
   tokenId: string
 ): Promise<TokenQueueResponse<boolean>> {
   try {
+    await prisma.$connect();
     await updateTokenStatusAction(tokenId, "CANCELLED");
 
     revalidatePath("/receptionist");
@@ -548,6 +554,7 @@ export async function getTokenQueueStatsAction(): Promise<
   TokenQueueResponse<TokenQueueStats>
 > {
   try {
+    await prisma.$connect();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -609,6 +616,7 @@ export async function callNextTokenAction(
   doctorId: string
 ): Promise<TokenQueueResponse<TokenQueueData>> {
   try {
+    await prisma.$connect();
     // 1. Find the counterId associated with the doctorId
     const doctor = await prisma.user.findUnique({
       where: { id: doctorId },
@@ -659,6 +667,102 @@ export async function callNextTokenAction(
   } catch (error) {
     console.error("Error calling next token:", error);
     return { success: false, error: "Failed to call next token." };
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export interface DoctorQueueDetails {
+  current: TokenQueueData | null;
+  next: TokenQueueData[];
+  recent: TokenQueueData[];
+}
+
+export async function getDoctorQueueDetailsAction(
+  counterId: string
+): Promise<TokenQueueResponse<DoctorQueueDetails>> {
+  try {
+    await prisma.$connect();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const currentToken = await prisma.tokenQueue.findFirst({
+      where: {
+        counterId: counterId,
+        status: "CALLED",
+        calledAt: { gte: today },
+      },
+      include: {
+        patient: true,
+      },
+      orderBy: { calledAt: "desc" },
+    });
+
+    const nextTokens = await prisma.tokenQueue.findMany({
+      where: {  
+        counterId: counterId,
+        status: "WAITING",
+        createdAt: { gte: today },
+      },
+      include: {
+        patient: true,
+      },
+      orderBy: [{ priority: "desc" }, { createdAt: "asc" }],
+      take: 5, // Limit to next 5 tokens
+    });
+
+    const recentTokens = await prisma.tokenQueue.findMany({
+      where: {
+        counterId: counterId,
+        status: "COMPLETED",
+        createdAt: { gte: today },
+      },
+      include: {
+        patient: true,
+      },
+      orderBy: { completedAt: "desc" },
+      take: 5, // Limit to last 5 completed tokens
+    });
+
+    const mapTokenToTokenQueueData = (token: any): TokenQueueData => ({
+      id: token.id,
+      tokenNumber: token.tokenNumber,
+      patientId: token.patientId,
+      patientName: token.patient.name,
+      displayName: generateDisplayName(
+        token.patient.name,
+        token.tokenNumber.toString()
+      ),
+      status: token.status as TokenQueueData["status"],
+      priority: token.priority as TokenQueueData["priority"],
+      estimatedWaitTime: token.estimatedWaitTime,
+      actualWaitTime: token.actualWaitTime,
+      createdAt: token.createdAt,
+      updatedAt: token.updatedAt,
+      calledAt: token.calledAt,
+      completedAt: token.completedAt,
+    });
+
+    const currentTokenData = currentToken
+      ? mapTokenToTokenQueueData(currentToken)
+      : null;
+    const nextTokensData = nextTokens.map(mapTokenToTokenQueueData);
+    const recentTokensData = recentTokens.map(mapTokenToTokenQueueData);
+
+    return {
+      success: true,
+      data: {
+        current: currentTokenData,
+        next: nextTokensData,
+        recent: recentTokensData,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching doctor queue details:", error);
+    return {
+      success: false,
+      error: "Failed to fetch doctor queue details.",
+    };
   } finally {
     await prisma.$disconnect();
   }

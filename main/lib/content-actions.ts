@@ -35,6 +35,7 @@ export interface ActionResponse<T> {
 
 export async function getSystemAnalyticsAction(): Promise<ActionResponse<AnalyticsData>> {
   try {
+    await prisma.$connect();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -210,6 +211,7 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
 
 export async function getDepartmentAnalyticsAction(departmentId: string): Promise<ActionResponse<any>> {
   try {
+    await prisma.$connect();
     const department = await prisma.department.findUnique({
       where: { id: departmentId },
     })

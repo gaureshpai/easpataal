@@ -1,9 +1,9 @@
-import { Feedback } from "@prisma/client";
 "use server"
+import { Feedback } from "@prisma/client";
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
-import type { Role } from "@prisma/client"
+import type { Role, User } from "@prisma/client"
 import bcrypt from "bcrypt"
 
 export interface CreateUserData {
@@ -23,34 +23,21 @@ export interface UpdateUserData {
     role?: Role
     status?: string
 }
-
-export interface UserWithStats {
-    id: string
-    username: string
-    name: string
-    email?: string | null
-    password?: string
-    role: Role
-    department?: string | null
-    status: string
-    createdAt: Date
-    updatedAt: Date
-}
-
 export interface UserActionResponse<T> {
     success: boolean
     data?: T
     error?: string
 }
 
-export async function getAllUsersAction(): Promise<UserActionResponse<UserWithStats[]>> {
+export async function getAllUsersAction(): Promise<UserActionResponse<User[]>> {
     try {
+        await prisma.$connect()
         const users = await prisma.user.findMany({
             orderBy: { createdAt: "desc" },
         })
 
         await prisma.$disconnect()
-        return { success: true, data: users as UserWithStats[] }
+        return { success: true, data: users as User[] }
     } catch (error) {
         console.error("Error finding all users:", error)
         await prisma.$disconnect()
@@ -58,8 +45,9 @@ export async function getAllUsersAction(): Promise<UserActionResponse<UserWithSt
     }
 }
 
-export async function getUserByIdAction(id: string): Promise<UserActionResponse<UserWithStats>> {
+export async function getUserByIdAction(id: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { id },
         })
@@ -70,7 +58,7 @@ export async function getUserByIdAction(id: string): Promise<UserActionResponse<
             return { success: false, error: "User not found" }
         }
 
-        return { success: true, data: user as UserWithStats }
+        return { success: true, data: user as User }
     } catch (error) {
         console.error("Error finding user by ID:", error)
         await prisma.$disconnect()
@@ -78,8 +66,9 @@ export async function getUserByIdAction(id: string): Promise<UserActionResponse<
     }
 }
 
-export async function createUserAction(formData: FormData): Promise<UserActionResponse<UserWithStats>> {
+export async function createUserAction(formData: FormData): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const username = formData.get("username") as string
         const name = formData.get("name") as string
         const email = formData.get("email") as string
@@ -135,7 +124,7 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
         await prisma.$disconnect()
         revalidatePath("/admin/users")
 
-        return { success: true, data: user as UserWithStats }
+        return { success: true, data: user as User }
     } catch (error) {
         console.error("Error creating user:", error)
         await prisma.$disconnect()
@@ -143,8 +132,9 @@ export async function createUserAction(formData: FormData): Promise<UserActionRe
     }
 }
 
-export async function updateUserAction(id: string, formData: FormData): Promise<UserActionResponse<UserWithStats>> {
+export async function updateUserAction(id: string, formData: FormData): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const name = formData.get("name") as string
         const email = formData.get("email") as string
         const password = formData.get("password") as string
@@ -193,7 +183,7 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
         await prisma.$disconnect()
         revalidatePath("/admin/users")
 
-        return { success: true, data: user as UserWithStats }
+        return { success: true, data: user as User }
     } catch (error) {
         console.error("Error updating user:", error)
         await prisma.$disconnect()
@@ -203,6 +193,7 @@ export async function updateUserAction(id: string, formData: FormData): Promise<
 
 export async function deleteUserAction(id: string): Promise<UserActionResponse<boolean>> {
     try {
+        await prisma.$connect();
         const userDependencies = await checkUserDependencies(id)
 
         if (userDependencies.hasAppointments || userDependencies.hasPrescriptions) {
@@ -230,8 +221,9 @@ export async function deleteUserAction(id: string): Promise<UserActionResponse<b
     }
 }
 
-export async function toggleUserStatusAction(id: string): Promise<UserActionResponse<UserWithStats>> {
+export async function toggleUserStatusAction(id: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { id },
         })
@@ -254,7 +246,7 @@ export async function toggleUserStatusAction(id: string): Promise<UserActionResp
         await prisma.$disconnect()
         revalidatePath("/admin/users")
 
-        return { success: true, data: updatedUser as UserWithStats }
+        return { success: true, data: updatedUser as User }
     } catch (error) {
         console.error("Error toggling user status:", error)
         await prisma.$disconnect()
@@ -264,6 +256,7 @@ export async function toggleUserStatusAction(id: string): Promise<UserActionResp
 
 export async function getUserStatsAction() {
     try {
+        await prisma.$connect();
         const totalUsers = await prisma.user.count({
             where: { status: "ACTIVE" },
         })
@@ -319,6 +312,7 @@ export async function getUserStatsAction() {
 
 async function checkUserDependencies(userId: string) {
     try {
+        await prisma.$connect();
         const [appointmentCount, prescriptionCount] = await Promise.all([
             prisma.appointment.count({
                 where: { doctorId: userId },
@@ -341,8 +335,9 @@ async function checkUserDependencies(userId: string) {
     }
 }
 
-export async function getUserByUsernameAction(username: string): Promise<UserActionResponse<UserWithStats>> {
+export async function getUserByUsernameAction(username: string): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { username },
         })
@@ -353,7 +348,7 @@ export async function getUserByUsernameAction(username: string): Promise<UserAct
             return { success: false, error: "User not found" }
         }
 
-        return { success: true, data: user as UserWithStats }
+        return { success: true, data: user as User }
     } catch (error) {
         console.error("Error finding user by username:", error)
         await prisma.$disconnect()
@@ -364,8 +359,9 @@ export async function getUserByUsernameAction(username: string): Promise<UserAct
 export async function validateUserCredentialsAction(
     username: string,
     password: string,
-): Promise<UserActionResponse<UserWithStats>> {
+): Promise<UserActionResponse<User>> {
     try {
+        await prisma.$connect();
         const user = await prisma.user.findUnique({
             where: { username },
         })
@@ -390,7 +386,7 @@ export async function validateUserCredentialsAction(
             return { success: false, error: "Invalid credentials" }
         }
 
-        return { success: true, data: user as UserWithStats }
+        return { success: true, data: user as User }
     } catch (error) {
         console.error("Error validating user credentials:", error)
         await prisma.$disconnect()
@@ -398,14 +394,15 @@ export async function validateUserCredentialsAction(
     }
 }
 
-export async function getDoctorsAction(): Promise<UserActionResponse<UserWithStats[]>> {
+export async function getDoctorsAction(): Promise<UserActionResponse<User[]>> {
     try {
+        await prisma.$connect();
         const doctors = await prisma.user.findMany({
             where: { role: "DOCTOR" },
         });
 
         await prisma.$disconnect();
-        return { success: true, data: doctors as UserWithStats[] };
+        return { success: true, data: doctors as User[] };
     } catch (error) {
         console.error("Error finding doctors:", error);
         await prisma.$disconnect();
@@ -426,6 +423,7 @@ export async function getFeedbackAnalytics(): Promise<UserActionResponse<{
   } | null;
 }>> {
   try {
+    await prisma.$connect();
     // 1. Anonymous feedback
     const anonymousFeedbacks = await prisma.feedback.findMany({
       orderBy: {

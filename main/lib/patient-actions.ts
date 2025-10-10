@@ -6,6 +6,7 @@ import sendSMS from "./twillio";
 
 export const getAllPatientsAction = async () => {
   try {
+    await prisma.$connect();
     console.log("Fetching all patients...");
     const patients = await prisma.patient.findMany();
     console.log("Patients fetched successfully:", patients);
@@ -18,6 +19,7 @@ export const getAllPatientsAction = async () => {
 
 export const createPatientAction = async (formData: FormData) => {
   try {
+    await prisma.$connect();
     console.log("Creating patient with formData:", formData);
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
@@ -50,6 +52,7 @@ export const createPatientAction = async (formData: FormData) => {
 
 export const updatePatientAction = async (id: string, formData: FormData) => {
   try {
+    await prisma.$connect();
     const name = formData.get("name") as string
     const phone = formData.get("phone") as string
     const age = formData.get("age") as string;
@@ -76,6 +79,7 @@ export const updatePatientAction = async (id: string, formData: FormData) => {
 
 export const searchPatientsAction = async (searchTerm: string) => {
   try {
+    await prisma.$connect();
     const patients = await prisma.patient.findMany({
       where: {
         OR: [
