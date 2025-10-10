@@ -6,6 +6,7 @@ import { Toaster } from "@/component/ui/toaster";
 
 export const metadata: Metadata = {
   title: "EASPATAAL - Patient",
+  metadataBase: new URL("https://easpataal.vercel.app"),
   description: "Patient portal for EASPATAAL",
   openGraph: {
     title: "EASPATAAL - Patient",
