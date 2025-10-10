@@ -5,6 +5,7 @@ import DoctorQueueClient from "@/components/doctor-queue-client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserByIdAction } from "@/lib/user-actions";
 import { authOptions } from "@/lib/auth";
+import { Navbar } from "@/components/navbar";
 
 export default async function DoctorQueuePage() {
   const session = await getServerSession(authOptions)
@@ -37,6 +38,7 @@ export default async function DoctorQueuePage() {
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
+      <Navbar />
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Doctor Queue</h2>
       </div>
