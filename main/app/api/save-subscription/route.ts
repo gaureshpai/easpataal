@@ -5,6 +5,7 @@ export async function POST(req: NextRequest) {
   const origin = req.headers.get("origin") || "*";
 
   try {
+    await prisma.$connect();
     const { userIds, ...body } = await req.json();
 
     // ✅ Validate userIds properly
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       userIds.map((userId: string) =>
         prisma.notificationSubscription.upsert({
           where: { patientId: userId },
-          update: {subscription: body},
+          update: { subscription: body },
           create: { patientId: userId, subscription: body },
         })
       )

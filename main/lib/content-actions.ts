@@ -35,6 +35,7 @@ export interface ActionResponse<T> {
 
 export async function getSystemAnalyticsAction(): Promise<ActionResponse<AnalyticsData>> {
   try {
+    await prisma.$connect();
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -77,6 +78,7 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
         status: true,
         createdAt: true,
         completedAt: true,
+        calledAt: true,
         estimatedWaitTime: true,
       },
     })
@@ -105,19 +107,19 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
     }
 
     // Calculate average wait time
-    const completedTokensWithTime = tokens.filter(
-      t => t.status === 'COMPLETED' && t.completedAt && t.createdAt
+    const calledTokensWithTime = tokens.filter(
+      t => t.status === 'CALLED' && t.calledAt && t.createdAt
     )
 
     let averageWaitTime = 0
-    if (completedTokensWithTime.length > 0) {
-      const totalWaitTime = completedTokensWithTime.reduce((sum, token) => {
-        const waitTime = token.completedAt && token.createdAt
-          ? (token.completedAt.getTime() - token.createdAt.getTime()) / 60000 // minutes
+    if (calledTokensWithTime.length > 0) {
+      const totalWaitTime = calledTokensWithTime.reduce((sum, token) => {
+        const waitTime = token.calledAt && token.createdAt
+          ? (token.calledAt.getTime() - token.createdAt.getTime()) / 60000 // minutes
           : 0
         return sum + waitTime
       }, 0)
-      averageWaitTime = Math.round(totalWaitTime / completedTokensWithTime.length)
+      averageWaitTime = Math.round(totalWaitTime / calledTokensWithTime.length)
     }
 
     // Fetch active counters
@@ -202,13 +204,12 @@ export async function getSystemAnalyticsAction(): Promise<ActionResponse<Analyti
       success: false,
       error: "Failed to fetch analytics data",
     }
-  } finally {
-    await prisma.$disconnect()
   }
 }
 
 export async function getDepartmentAnalyticsAction(departmentId: string): Promise<ActionResponse<any>> {
   try {
+    await prisma.$connect();
     const department = await prisma.department.findUnique({
       where: { id: departmentId },
     })
@@ -253,7 +254,5 @@ export async function getDepartmentAnalyticsAction(departmentId: string): Promis
       success: false,
       error: "Failed to fetch department analytics",
     }
-  } finally {
-    await prisma.$disconnect()
   }
 }

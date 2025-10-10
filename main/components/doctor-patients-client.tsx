@@ -41,7 +41,6 @@ import {
   Plus,
   X,
 } from "lucide-react"
-import { AuthGuard } from "@/components/auth-guard"
 import { Navbar } from "@/components/navbar"
 import PatientForm  from "@/components/patient-form"
 import { useToast } from "@/hooks/use-toast";
@@ -111,7 +110,7 @@ export default function DoctorPatientsPage() {
   }
 
   return (
-    <AuthGuard allowedRoles={["DOCTOR", "ADMIN"]} className="container mx-auto p-2 md:p-6 space-y-6">
+    <>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
 
@@ -495,6 +494,6 @@ export default function DoctorPatientsPage() {
           }
         </main>
       </div>
-    </AuthGuard>
+    </>
   )
 }

@@ -1,5 +1,3 @@
-import type { Metadata } from "next";
-import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CounterManagement from "@/components/counter-management";
@@ -7,7 +5,7 @@ import CounterCategoryManagement from "@/components/counter-category-management"
 
 export default function page() {
   return (
-    <AuthGuard allowedRoles={["ADMIN"]}>
+    <>
       <Navbar />
       <div className="container mx-auto p-6 space-y-6">
         <Tabs defaultValue="counters" className="space-y-6">
@@ -23,6 +21,6 @@ export default function page() {
           </TabsContent>
         </Tabs>
       </div>
-    </AuthGuard>
+    </>
   );
 }

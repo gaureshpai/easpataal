@@ -151,6 +151,7 @@ export interface CreateMedicalRecordData {
 
 async function getOrCreateDoctorByUsername(username: string): Promise<string> {
     try {
+        await prisma.$connect();
         let doctor = await prisma.user.findFirst({
             where: {
                 username: username,
@@ -180,6 +181,7 @@ async function getOrCreateDoctorByUsername(username: string): Promise<string> {
 
 export async function getDoctorAppointments(doctorUsername: string, date?: Date): Promise<AppointmentData[]> {
     try {
+        await prisma.$connect();
         const doctorId = await getOrCreateDoctorByUsername(doctorUsername)
 
         const targetDate = date || new Date()
@@ -230,6 +232,7 @@ export async function getDoctorAppointments(doctorUsername: string, date?: Date)
 
 export async function getDoctorPatients(doctorUsername: string, limit = 50): Promise<PatientData[]> {
     try {
+        await prisma.$connect();
         const patients = await prisma.patient.findMany({
             where: {
                 status: "ACTIVE",
@@ -319,6 +322,7 @@ export async function getDoctorPatients(doctorUsername: string, limit = 50): Pro
 
 export async function searchPatients(query: string, limit = 20): Promise<PatientData[]> {
     try {
+        await prisma.$connect();
         const patients = await prisma.patient.findMany({
             where: {
                 OR: [
@@ -413,6 +417,7 @@ export async function searchPatients(query: string, limit = 20): Promise<Patient
 
 export async function getPatientDetails(patientId: string): Promise<PatientData | null> {
     try {
+        await prisma.$connect();
         const patient = await prisma.patient.findUnique({
             where: { id: patientId },
             include: {
@@ -497,6 +502,7 @@ export async function getPatientDetails(patientId: string): Promise<PatientData 
 
 export async function createPrescription(data: CreatePrescriptionData): Promise<PrescriptionData> {
     try {
+        await prisma.$connect();
         const doctorId = await getOrCreateDoctorByUsername(data.doctorUsername)
 
         const drugPromises = data.medications.map(async (med) => {
@@ -606,6 +612,7 @@ export async function createPrescription(data: CreatePrescriptionData): Promise<
 
 export async function getDoctorPrescriptions(doctorUsername: string, limit = 50): Promise<PrescriptionData[]> {
     try {
+        await prisma.$connect();
         const doctorId = await getOrCreateDoctorByUsername(doctorUsername)
 
         const prescriptions = await prisma.prescription.findMany({
@@ -667,6 +674,7 @@ export async function getDoctorPrescriptions(doctorUsername: string, limit = 50)
 
 export async function updateAppointmentStatus(appointmentId: string, status: any): Promise<boolean> {
     try {
+        await prisma.$connect();
         await prisma.appointment.update({
             where: { id: appointmentId },
             data: { status },
@@ -682,6 +690,7 @@ export async function updateAppointmentStatus(appointmentId: string, status: any
 
 export async function getDoctorStats(doctorUsername: string) {
     try {
+        await prisma.$connect();
         const doctorId = await getOrCreateDoctorByUsername(doctorUsername)
 
         const today = new Date()
@@ -761,6 +770,7 @@ export async function getAvailableDrugs(query?: string): Promise<
         location: string
     }[]>{
     try {
+        await prisma.$connect();
         const drugs = await prisma.drugInventory.findMany({
             where: {
                 AND: [
@@ -812,7 +822,7 @@ export async function getAllDrugsForSelection(query?: string): Promise<
     }[]
 > {
     try {
-
+        await prisma.$connect();
         const drugs = await prisma.drugInventory.findMany({
             where: query
                 ? {

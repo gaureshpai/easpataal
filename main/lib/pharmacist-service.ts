@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma"
+import { DrugInventoryStatus, PrescriptionStatus } from "@prisma/client"
 
 export interface DrugInventoryItem {
     id: string
@@ -17,7 +18,7 @@ export interface PrescriptionWithItems {
     id: string
     patient: string
     doctor: string
-    status: string
+    status: PrescriptionStatus // <--- Change this to PrescriptionStatus
     createdAt: string
     items: Array<{
         id: string
@@ -45,6 +46,7 @@ export interface PurchaseOrderWithItems {
 
 export async function getDrugInventory(): Promise<DrugInventoryItem[]> {
     try {
+        await prisma.$connect();
         const inventory = await prisma.drugInventory.findMany({
             orderBy: { updatedAt: "desc" },
         })
@@ -69,6 +71,7 @@ export async function getDrugInventory(): Promise<DrugInventoryItem[]> {
 
 export async function getPrescriptions(): Promise<PrescriptionWithItems[]> {
     try {
+        await prisma.$connect();
         const prescriptions = await prisma.prescription.findMany({
             include: {
                 patient: {
@@ -115,10 +118,10 @@ export async function getPrescriptions(): Promise<PrescriptionWithItems[]> {
     }
 }
 
-function getStockStatus(stock: number, reorderLevel: number): string {
-    if (stock <= reorderLevel * 0.5) return "critical"
-    if (stock <= reorderLevel) return "low"
-    return "available"
+function getStockStatus(stock: number, reorderLevel: number): DrugInventoryStatus {
+    if (stock <= reorderLevel * 0.5) return "LOW"
+    if (stock <= reorderLevel) return "LOW"
+    return "NORMAL"
 }
 
 export async function addDrugToInventory(drugData: {
@@ -131,6 +134,7 @@ export async function addDrugToInventory(drugData: {
     expiryDate?: Date
 }): Promise<{ success: boolean; error?: string }> {
     try {
+        await prisma.$connect();
         await prisma.drugInventory.create({
             data: {
                 drugName: drugData.drugName,
@@ -156,6 +160,7 @@ export async function updateDrugInventory(
     updates: Partial<DrugInventoryItem>,
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        await prisma.$connect();
         await prisma.drugInventory.update({
             where: { id: drugId },
             data: {
@@ -187,10 +192,11 @@ export async function processPrescription(
     }>,
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        await prisma.$connect();
         await prisma.$transaction(async (tx) => {
             await tx.prescription.update({
                 where: { id: prescriptionId },
-                data: { status: "processing" as any },
+                data: { status: "FILLED" as any },
             })
             
             for (const item of dispensedItems) {
@@ -227,6 +233,7 @@ export async function processPrescription(
 
 export async function completePrescription(prescriptionId: string): Promise<{ success: boolean; error?: string }> {
     try {
+        await prisma.$connect();
         await prisma.prescription.update({
             where: { id: prescriptionId },
                 data: { status: "COMPLETED" as any },
@@ -236,6 +243,20 @@ export async function completePrescription(prescriptionId: string): Promise<{ su
     } catch (error) {
         console.error("Error completing prescription:", error)
         return { success: false, error: "Failed to complete prescription" }
+    }
+}
+
+export async function cancelPrescription(prescriptionId: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await prisma.prescription.update({
+            where: { id: prescriptionId },
+            data: { status: "CANCELLED" as any },
+        })
+
+        return { success: true }
+    } catch (error) {
+        console.error("Error cancelling prescription:", error)
+        return { success: false, error: "Failed to cancel prescription" }
     }
 }
 

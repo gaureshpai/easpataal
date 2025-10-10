@@ -1,9 +1,7 @@
 import { getFeedbackAnalytics } from "@/lib/user-actions";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Star, MessageSquare, User, Award } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Star, MessageSquare, Award } from "lucide-react";
 import { FeedbackList } from "@/components/feedback-list";
-import { AuthGuard } from "@/components/auth-guard";
 import { Navbar } from "@/components/navbar";
 
 export default async function AdminFeedbackPage() {
@@ -16,9 +14,9 @@ export default async function AdminFeedbackPage() {
   const { anonymousFeedbacks, tokenFeedbacks, anonymousFeedbackStats, bestDoctor } = data;
 
   return (
-    <AuthGuard allowedRoles={["ADMIN"]}>
+    <>
       <Navbar />
-      <div className="p-4 sm:p-6 md:p-8 max-w-7xl">
+      <div className="p-4 sm:p-6 md:p-8 mx-auto">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Patient Feedback</h1>
           <p className="text-gray-600 mt-1">Review and address feedback submitted by patients.</p>
@@ -65,6 +63,6 @@ export default async function AdminFeedbackPage() {
 
         <FeedbackList anonymousFeedbacks={anonymousFeedbacks} tokenFeedbacks={tokenFeedbacks} />
       </div>
-    </AuthGuard>
+    </>
   );
 }

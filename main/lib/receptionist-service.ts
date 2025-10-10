@@ -59,6 +59,7 @@ export interface ReceptionistDashboardData {
 
 export async function getReceptionistDashboardData(): Promise<ReceptionistDashboardData> {
   try {
+    await prisma.$connect();
     const patientsData = await prisma.patient.findMany({
       where: {
         status: "ACTIVE",
@@ -174,6 +175,7 @@ export async function updatePatient(
   }
 ): Promise<{ success: boolean; message: string }> {
   try {
+    await prisma.$connect();
     await prisma.patient.update({
       where: { id: patientId },
       data: {
@@ -203,6 +205,7 @@ export async function updatePatientVitals(
   }
 ): Promise<{ success: boolean; message: string }> {
   try {
+    await prisma.$connect();
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
       select: { vitals: true },
@@ -243,6 +246,7 @@ export async function administerMedication(
   receptionistId: string
 ): Promise<{ success: boolean; message: string }> {
   try {
+    await prisma.$connect();
     const prescriptionItem = await prisma.prescriptionItem.findFirst({
       where: {
         prescription: {
@@ -298,6 +302,7 @@ export async function completeTask(
 
 export async function getReceptionistStats() {
   try {
+    await prisma.$connect();
     const [totalPatients, criticalPatients] =
       await Promise.all([
         prisma.patient.count({

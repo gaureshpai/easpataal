@@ -1,13 +1,24 @@
-import type { Metadata } from "next";
-import { connection } from 'next/server'
-import PatientTokenClient from "@/component/patient-token-client";
+'use client'
 
-export const metadata: Metadata = {
-  title: "Patient Token - EASPATAAL",
-  description: "View your token information.",
-};
+import { useSearchParams } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import PatientTokenClient from '@/component/patient-token-client'
 
-export default async function Page() {
-  await connection()
-  return <PatientTokenClient />;
+function Search() {
+
+
+  return (
+    <>
+      <PatientTokenClient  />
+     
+    </>
+  )
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Search />
+    </Suspense>
+  )
 }

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { ProfileSelection, TokenCard } from "./patient-token-helpers";
+import { ProfileSelection, TokenCard, TokenCardSkeleton } from "./patient-token-helpers";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 
@@ -22,6 +22,7 @@ export default function PatientClient() {
     }>[]
   >([]);
   const [loading, setLoading] = useState(false);
+  const [tokensLoading, setTokensLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"current" | "history">("current");
   const [feedbackToken, setFeedbackToken] = useState<string | null>(null);
   const [rating, setRating] = useState(0);
@@ -63,10 +64,7 @@ export default function PatientClient() {
     }
     const requestNotificationPermission = async () => {
       const permission = await window.Notification.requestPermission()
-      console.log(permission)
-      if (permission !== 'granted') {
-        throw new Error('Permission not granted for Notification')
-      }
+      
     }
     const main = async () => {
       check()
@@ -95,6 +93,7 @@ export default function PatientClient() {
       }
       const fetchTokens = async () => {
         try {
+          setTokensLoading(true);
           const fetchedTokens: Prisma.TokenQueueGetPayload<{
             include: { patient: true };
           }>[] = await getTokenByPatientId(selectedProfile);
@@ -105,6 +104,8 @@ export default function PatientClient() {
             description: "Failed to fetch tokens.",
             variant: "destructive",
           });
+        } finally {
+          setTokensLoading(false);
         }
       };
   
@@ -116,7 +117,7 @@ export default function PatientClient() {
     const handleProfileSelect = async (profileId: string) => {
       setSelectedProfile(profileId);
       router.push(`/?id=${profileId}`);
-      setLoading(true);
+      setTokensLoading(true);
       try {
         const fetchedTokens: Prisma.TokenQueueGetPayload<{
           include: { patient: true };
@@ -129,7 +130,7 @@ export default function PatientClient() {
           variant: "destructive",
         });
       } finally {
-        setLoading(false);
+        setTokensLoading(false);
       }
     };
   
@@ -192,8 +193,8 @@ export default function PatientClient() {
     }
   
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pb-20">
-        <div className="max-w-2xl mx-auto p-4">
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           <div className="flex justify-between items-center mb-6 bg-white rounded-2xl p-4 shadow-md">
             <div>
               <h1 className="text-xl font-bold text-gray-800">My Tokens</h1>
@@ -207,10 +208,11 @@ export default function PatientClient() {
           </div>
   
           <div className="mb-6">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
-                <p className="text-gray-600">Loading tokens...</p>
+            {tokensLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <TokenCardSkeleton key={i} />
+                ))}
               </div>
             ) : displayedTokens.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl shadow-md">
@@ -247,12 +249,12 @@ export default function PatientClient() {
           </div>
         </div>
   
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg">
-          <div className="max-w-2xl mx-auto flex">
+        <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg h-fit">
+          <div className="max-w-7xl mx-auto flex h-full items-center">
             <Button
               onClick={() => setActiveTab("current")}
               variant={activeTab === "current" ? "secondary" : "ghost"}
-              className="flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all"
+              className="flex-1 p-6 flex flex-col items-center justify-center gap-1 transition-all"
             >
               <TicketIcon className="w-6 h-6" />
               <span className="text-xs font-medium">Current</span>

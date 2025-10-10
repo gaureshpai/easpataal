@@ -10,6 +10,43 @@ import { Smartphone } from "lucide-react";
 
 // ... (ProfileSelection component)
 
+export function TokenCardSkeleton() {
+  return (
+    <Card className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+      <div className="bg-gradient-to-r from-gray-300 to-gray-200 p-4 text-white animate-pulse">
+        <div className="flex justify-between items-start">
+          <div>
+            <Skeleton className="h-4 w-24 mb-1" />
+            <Skeleton className="h-8 w-32" />
+          </div>
+          <Skeleton className="h-6 w-20 rounded-full" />
+        </div>
+      </div>
+      <CardContent className="p-4">
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <Skeleton className="h-3 w-20 mb-1" />
+            <Skeleton className="h-5 w-28" />
+          </div>
+        </div>
+        <div className="bg-gray-100 rounded-xl p-3 mb-3 border border-gray-200 animate-pulse">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded-full" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-6 w-10" />
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-2">
+          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function TokenCard({ token, activeTab, peopleAhead, onFeedback, loading, feedbackToken, setFeedbackToken, setRating, setFeedbackText, rating, feedbackText, handleSubmitFeedback }: {
   token: Prisma.TokenQueueGetPayload<{ include: { patient: true } }>;
   activeTab: "current" | "history";
@@ -52,7 +89,7 @@ export function TokenCard({ token, activeTab, peopleAhead, onFeedback, loading, 
 
   return (
     <Card className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all overflow-hidden border border-gray-100">
-      <div className="bg-gradient-to-r from-purple-500 to-pink-500 p-4 text-white">
+      <div className="bg-primary text-primary-foreground p-4">
         <div className="flex justify-between items-start">
           <div>
             <p className="text-sm opacity-90">Token Number</p>
@@ -159,21 +196,21 @@ export function FeedbackForm({ onSubmit, onCancel, loading }: {
           value={feedbackText}
           onChange={(e:any) => setFeedbackText(e.target.value)}
           placeholder="Share your feedback (optional)"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none text-sm"
           rows={3}
         />
       </div>
       <div className="flex gap-2">
         <Button
           onClick={() => onSubmit({ rating, text: feedbackText })}
-          className="flex-1 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium text-sm"
+          className="flex-1"
+          variant="default"
           disabled={loading}
         >
           {loading ? "Submitting..." : "Submit Feedback"}
         </Button>
         <Button
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium text-sm"
+          variant="outline"
         >
           Cancel
         </Button>
@@ -268,13 +305,13 @@ export function ProfileSelection({ profiles, onSelectProfile, loading }: {
   loading: boolean;
 }) {
   return (
-    <div className="flex flex-col items-start min-h-screen p-6 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      <div className="w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-start min-h-screen p-6 bg-gray-50">
+      <div className="w-full max-w-7xl mx-auto">
         <h1 className="text-3xl font-bold mb-2 text-gray-800">Select a Profile</h1>
         <p className="text-gray-600 mb-8">Choose a profile to view token information</p>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
               <Card key={i} className="aspect-square">
                 <CardContent className="flex flex-col items-center justify-center p-4">
@@ -289,8 +326,8 @@ export function ProfileSelection({ profiles, onSelectProfile, loading }: {
           <div className="flex flex-col items-center justify-center mt-20">
             <Card className="w-full max-w-md text-center p-6">
               <CardHeader className="p-0">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 mb-4">
-                      <Smartphone className="h-6 w-6 text-purple-600" />
+                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                      <Smartphone className="h-6 w-6 text-primary" />
                   </div>
                 <CardTitle className="text-2xl font-bold text-gray-800">No Patient Profiles Found</CardTitle>
                 <CardDescription className="text-gray-600 pt-2">
@@ -305,7 +342,7 @@ export function ProfileSelection({ profiles, onSelectProfile, loading }: {
             </Card>
           </div>
         ) : (
-          <div className={`grid gap-4 ${profiles.length === 1 ? "grid-cols-1" : profiles.length === 2 ? "grid-cols-2" : "grid-cols-1 md:grid-cols-2"}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {profiles.map((profile) => (
               <Card
                 key={profile.id}

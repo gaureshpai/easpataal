@@ -9,7 +9,7 @@ on:
       - 'patient/**'
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -35,6 +35,13 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Test
+        run: npm test
+        continue-on-error: true # Allow build to proceed even if tests fail, for initial setup
 
       - name: Build
         run: npm run build:ci
