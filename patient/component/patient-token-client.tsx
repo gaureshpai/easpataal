@@ -251,12 +251,12 @@ export default function PatientClient({setPermision}:any) {
           </div>
         </div>
   
-        <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg h-12">
+        <div className="fixed z-50 bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg h-fit">
           <div className="max-w-7xl mx-auto flex h-full items-center">
             <Button
               onClick={() => setActiveTab("current")}
               variant={activeTab === "current" ? "secondary" : "ghost"}
-              className="flex-1 py-4 px-6 flex flex-col items-center justify-center gap-1 transition-all"
+              className="flex-1 p-6 flex flex-col items-center justify-center gap-1 transition-all"
             >
               <TicketIcon className="w-6 h-6" />
               <span className="text-xs font-medium">Current</span>
