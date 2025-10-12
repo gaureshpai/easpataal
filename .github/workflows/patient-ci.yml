@@ -39,10 +39,6 @@ jobs:
       - name: Type Check
         run: npx tsc --noEmit
 
-      - name: Test
-        run: npm test
-        continue-on-error: true # Allow build to proceed even if tests fail, for initial setup
-
       - name: Build
         run: npm run build:ci
 

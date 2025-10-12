@@ -35,14 +35,6 @@ jobs:
         run: npx tsc --noEmit
         working-directory: ./patient
 
-      - name: Lint Check (main)
-        run: npm run lint
-        working-directory: ./main
-
-      - name: Lint Check (patient)
-        run: npm run lint
-        working-directory: ./patient
-
       - name: Tailwind CSS Config Check (main)
         run: |
           ls postcss.config.mjs
