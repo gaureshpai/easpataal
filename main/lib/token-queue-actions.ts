@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { generateDisplayName } from "@/lib/helpers";
-import { sendNotification } from "@/lib/notifications";
+import { sendNotification } from "@/lib/web-push";
 import sendSMS from "./twillio";
 
 export interface TokenQueueData {
