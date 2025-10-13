@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma'; // Assuming prisma is correctly mocked or con
 
 // Mock Prisma client
 jest.mock('@/lib/prisma', () => ({
+  $connect: jest.fn(),
   counter: {
     findMany: jest.fn(),
   },
