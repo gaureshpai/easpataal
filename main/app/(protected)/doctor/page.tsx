@@ -54,6 +54,23 @@ import {
 } from "@/lib/doctor-actions";
 import { getNotificationBgColor, getStatusColor } from "@/lib/functions"
 import { Medication, DrugOption } from "@/lib/helpers"
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PatientCardSkeleton = () => (
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 p-4 border rounded-lg bg-white">
+    <div className="flex items-center space-x-4">
+      <Skeleton className="h-12 w-12 rounded-full" />
+      <div>
+        <Skeleton className="h-4 w-24 mb-2" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+    </div>
+    <div className="flex items-center space-x-2">
+      <Skeleton className="h-4 w-20" />
+      <Skeleton className="h-9 w-24" />
+    </div>
+  </div>
+);
 
 export default function DoctorDashboard() {
   const [currentDate] = useState(new Date())
@@ -791,17 +808,9 @@ export default function DoctorDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {(loading || patients.length === 0) ? (
-                    <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                      <div className="text-center space-y-1">
-                        <Users className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                        <p className="text-lg font-medium text-gray-700">Loading patient records</p>
-                        <p className="text-sm text-gray-500">
-                          This may take a moment...
-                        </p>
-                      </div>
-                    </div>
-                  ) : patients.length > 0 ? (
+                  {loading ? (
+                    [...Array(5)].map((_, i) => <PatientCardSkeleton key={i} />)
+                  ) : patients.length === 0 ? (
                     patients.map((patient) => (
                       <div
                         key={patient.id}

@@ -20,6 +20,58 @@ import { addDrugToInventoryAction, updateDrugInventoryAction } from "@/lib/pharm
 import { useToast } from "@/hooks/use-toast"
 import { DrugInventoryItem, InventoryClientProps } from "@/lib/helpers"
 import { getStatusColor } from "@/lib/functions"
+import { Skeleton } from "@/components/ui/skeleton";
+
+const InventoryItemSkeleton = () => (
+    <div className="p-4 border rounded-lg bg-white">
+        <div className="flex items-center justify-between mb-2">
+            <div>
+                <Skeleton className="h-5 w-32 mb-2" />
+                <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-6 w-20" />
+        </div>
+        <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-2.5 w-full" />
+            <div className="flex justify-between text-xs text-gray-500">
+                <Skeleton className="h-3 w-32" />
+                <Skeleton className="h-3 w-24" />
+            </div>
+        </div>
+        <div className="mt-3 flex space-x-2">
+            <Skeleton className="h-9 w-20" />
+        </div>
+    </div>
+);
+
+export const InventoryClientSkeleton = () => (
+    <div className="space-y-6">
+        <Card>
+            <CardHeader>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                        <Skeleton className="h-5 w-5" />
+                        <Skeleton className="h-5 w-32" />
+                    </div>
+                    <Skeleton className="h-10 w-32" />
+                </div>
+                <Skeleton className="h-4 w-64 mt-1" />
+                <div className="relative mt-2">
+                    <Skeleton className="h-10 w-full" />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => <InventoryItemSkeleton key={i} />)}
+                </div>
+            </CardContent>
+        </Card>
+    </div>
+);
 
 export default function InventoryClient({ inventory }: InventoryClientProps) {
     const [searchTerm, setSearchTerm] = useState("")
@@ -27,7 +79,7 @@ export default function InventoryClient({ inventory }: InventoryClientProps) {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
     const [currentDrug, setCurrentDrug] = useState<DrugInventoryItem | null>(null)
     const { toast } = useToast()
-    
+
     const [newDrug, setNewDrug] = useState({
         drugName: "",
         currentStock: 0,
@@ -37,7 +89,7 @@ export default function InventoryClient({ inventory }: InventoryClientProps) {
         batchNumber: "",
         expiryDate: "",
     })
-    
+
     const [editDrug, setEditDrug] = useState<DrugInventoryItem | null>(null)
 
     const filteredInventory = inventory.filter(
@@ -163,10 +215,10 @@ export default function InventoryClient({ inventory }: InventoryClientProps) {
                                         <div className="w-full bg-gray-200 rounded-full h-2.5">
                                             <div
                                                 className={`h-2.5 rounded-full ${drug.status === "critical"
-                                                        ? "bg-red-600"
-                                                        : drug.status === "low"
-                                                            ? "bg-yellow-500"
-                                                            : "bg-green-500"
+                                                    ? "bg-red-600"
+                                                    : drug.status === "low"
+                                                        ? "bg-yellow-500"
+                                                        : "bg-green-500"
                                                     }`}
                                                 style={{
                                                     width: `${Math.min((drug.currentStock / (drug.minStock * 2)) * 100, 100)}%`,

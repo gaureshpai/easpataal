@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { createPrescription, CreatePrescriptionData, getAllDrugsForSelection } from "@/lib/doctor-service";
 import { Combobox } from "./ui/combobox";
 import { ScrollArea } from "./ui/scroll-area";
+import { Loader2 } from "lucide-react";
 
 interface PrescriptionModalProps {
   isOpen: boolean;
@@ -229,7 +230,14 @@ export function PrescriptionModal({
         </ScrollArea>
         <DialogFooter>
           <Button type="submit" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Adding..." : "Add Prescription"}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Prescription"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

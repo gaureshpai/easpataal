@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react"
 import { Navbar } from "@/components/navbar"
 import { getDrugInventoryAction } from "@/lib/pharmacist-actions"
-import InventoryClient from "@/components/inventory-client"
+import InventoryClient, { InventoryClientSkeleton } from "@/components/inventory-client"
 
 export const metadata: Metadata = {
   title: "Pharmacy Inventory - EASPATAAL",
@@ -31,7 +31,7 @@ export default async function InventoryPage() {
           </div>
         </div>
 
-        <Suspense fallback={<div>Loading inventory...</div>}>
+        <Suspense fallback={<InventoryClientSkeleton />}>
           <InventoryClient inventory={inventory} />
         </Suspense>
       </main>

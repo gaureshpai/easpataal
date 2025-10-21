@@ -66,6 +66,44 @@ import { useToast } from "@/hooks/use-toast";
 import { roles, type UserFormData } from "@/lib/helpers";
 import { getDepartmentOptions } from "@/lib/department-actions";
 import DepartmentForm from "./department-form";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const UserTableSkeleton = () => (
+  <div className="overflow-x-auto">
+    <table className="w-full">
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody className="bg-white divide-y divide-gray-200">
+        {[...Array(5)].map((_, i) => (
+          <tr key={i}>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-24" /></td>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-32" /></td>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-40" /></td>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-6 w-24" /></td>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-4 w-24" /></td>
+            <td className="px-6 py-4 whitespace-nowrap"><Skeleton className="h-6 w-20" /></td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <div className="flex items-center space-x-2">
+                <Skeleton className="h-8 w-8" />
+                <Skeleton className="h-8 w-8" />
+                <Skeleton className="h-8 w-8" />
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 const UserForm = ({
   isEdit = false,
@@ -713,13 +751,7 @@ const UserManagementPage = () => {
           <div className="rounded-md border overflow-hidden">
             <div className="overflow-x-auto">
               {loading ? (
-                <div className="text-center py-8 text-gray-500">
-                  <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p>Loading users...</p>
-                  <p className="text-gray-600">
-                    Please wait while we fetch the user data.
-                  </p>
-                </div>
+                <UserTableSkeleton />
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   {searchTerm

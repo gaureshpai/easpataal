@@ -49,6 +49,9 @@ export default async function DoctorQueuePage() {
         doctorId={session.user.id}
         counterId={session.user.counterId}
       />
+      <footer className="mt-8 text-center text-gray-500 text-sm">
+        &copy; {new Date().getFullYear()} EASPATAAL. All rights reserved.
+      </footer>
     </div>
   );
 }

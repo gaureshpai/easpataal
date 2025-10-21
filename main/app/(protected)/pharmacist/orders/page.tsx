@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react"
 import { Navbar } from "@/components/navbar"
 import { getPrescriptionsAction } from "@/lib/pharmacist-actions"
-import OrdersClient from "@/components/orders-client"
+import OrdersClient, { OrdersClientSkeleton } from "@/components/orders-client"
 
 export const metadata: Metadata = {
   title: "Prescription Orders - EASPATAAL",
@@ -31,7 +31,7 @@ export default async function OrdersPage() {
           </div>
         </div>
 
-        <Suspense fallback={<div>Loading prescriptions...</div>}>
+        <Suspense fallback={<OrdersClientSkeleton />}>
           <OrdersClient prescriptions={prescriptions} />
         </Suspense>
       </main>

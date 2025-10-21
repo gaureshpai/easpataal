@@ -3,6 +3,36 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getTokenDisplayData } from '@/lib/token-actions'; // Import the server action
+import { Skeleton } from "@/components/ui/skeleton";
+
+const TokenDisplaySkeleton = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white p-8 flex flex-col items-center justify-center">
+    <Skeleton className="h-12 w-3/4 max-w-2xl mb-8" />
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+      <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl p-8 flex flex-col items-center justify-center">
+        <Skeleton className="h-8 w-48 mb-4" />
+        <Skeleton className="h-20 w-32" />
+      </div>
+
+      <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl p-8 flex flex-col items-center justify-center">
+        <Skeleton className="h-8 w-40 mb-4" />
+        <Skeleton className="h-16 w-28" />
+      </div>
+
+      <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-xl shadow-2xl p-8 col-span-1 md:col-span-1">
+        <Skeleton className="h-8 w-56 mb-6 mx-auto" />
+        <div className="space-y-3">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </div>
+    </div>
+
+    <Skeleton className="h-6 w-64 mt-12" />
+  </div>
+);
 
 interface TokenData {
   counterName: string;
@@ -41,11 +71,7 @@ export default function TokenDisplayPage() {
   }, [id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-2xl font-semibold text-gray-700">Loading tokens...</p>
-      </div>
-    );
+    return <TokenDisplaySkeleton />;
   }
 
   if (error) {

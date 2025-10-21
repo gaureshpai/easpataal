@@ -2,22 +2,15 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState } from 'react'
-import PatientTokenClient from '@/component/patient-token-client'
+import PatientTokenClient, { PatientTokenClientSkeleton } from '@/component/patient-token-client'
 
 function Search() {
-
-
-  return (
-    <>
-      <PatientTokenClient  />
-     
-    </>
-  )
+  return <PatientTokenClient />;
 }
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<PatientTokenClientSkeleton />}>
       <Search />
     </Suspense>
   )

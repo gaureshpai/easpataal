@@ -19,6 +19,63 @@ import { FileText, Search, CheckCircle } from "lucide-react"
 import { processPrescriptionAction, completePrescriptionAction, cancelPrescriptionAction } from "@/lib/pharmacist-actions"
 import { useToast } from "@/hooks/use-toast"
 import { getPrescriptionStatusColor } from "@/lib/functions"
+import { Skeleton } from "@/components/ui/skeleton";
+
+const OrderCardSkeleton = () => (
+  <div className="p-4 border rounded-lg bg-white">
+    <div className="flex items-center justify-between mb-3">
+      <div>
+        <Skeleton className="h-5 w-40 mb-2" />
+        <Skeleton className="h-4 w-64" />
+        <Skeleton className="h-3 w-24 mt-1" />
+      </div>
+      <Skeleton className="h-6 w-24" />
+    </div>
+    <div className="space-y-2 mb-3">
+      <Skeleton className="h-4 w-32" />
+      <div className="text-sm bg-gray-50 p-2 rounded">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-3 w-full mt-1" />
+      </div>
+      <div className="text-sm bg-gray-50 p-2 rounded">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-3 w-full mt-1" />
+      </div>
+    </div>
+    <div className="flex space-x-2">
+      <Skeleton className="h-9 w-24" />
+      <Skeleton className="h-9 w-24" />
+    </div>
+  </div>
+);
+
+export const OrdersClientSkeleton = () => (
+  <div className="space-y-6">
+    <Card>
+      <CardHeader>
+        <div className="flex items-center space-x-2">
+          <Skeleton className="h-5 w-5" />
+          <Skeleton className="h-5 w-40" />
+        </div>
+        <Skeleton className="h-4 w-72 mt-1" />
+        <div className="relative mt-2">
+          <Skeleton className="h-10 w-full" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid w-full grid-cols-1 mb-16 md:grid-cols-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => <OrderCardSkeleton key={i} />)}
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+);
 
 interface PrescriptionItem {
   id: string
@@ -66,7 +123,7 @@ export default function OrdersClient({ prescriptions }: OrdersClientProps) {
   const handleStartProcessing = (prescription: Prescription) => {
     setCurrentPrescription(prescription)
     setDispensedItems(
-      prescription.items.map((item:any) => ({
+      prescription.items.map((item: any) => ({
         itemId: item.id,
         drugName: item.drugName,
         quantityDispensed: item.quantity,

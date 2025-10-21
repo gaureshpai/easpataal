@@ -7,7 +7,7 @@ import {
   getTopMedicationsAction,
   getPrescriptionTrendsAction,
 } from "@/lib/pharmacist-actions"
-import PharmacyDashboardClient from "@/components/pharmacy-dashboard-client"
+import PharmacyDashboardClient, { PharmacyDashboardClientSkeleton } from "@/components/pharmacy-dashboard-client"
 
 export const metadata: Metadata = {
   title: "Pharmacist Dashboard - EASPATAAL",
@@ -38,7 +38,7 @@ export default async function PharmacistDashboard() {
           </div>
         </div>
 
-        <Suspense fallback={<div>Loading statistics...</div>}>
+        <Suspense fallback={<PharmacyDashboardClientSkeleton />}>
           <PharmacyDashboardClient
             statistics={statistics}
             topMedications={topMedications}

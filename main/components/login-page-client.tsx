@@ -43,6 +43,41 @@ import {
 import { signIn } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import { demoCredentials } from "@/lib/credentials";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+
+const LoginPageSkeleton = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="w-full max-w-md">
+      <Card className="shadow-2xl">
+        <CardHeader className="text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Skeleton className="h-16 w-16 rounded-full" />
+          </div>
+          <Skeleton className="h-8 w-48 mx-auto mb-2" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-16" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
+      <Skeleton className="h-4 w-48 mx-auto mt-8" />
+    </div>
+  </div>
+);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -133,11 +168,7 @@ export default function LoginPage() {
 
   // Show loading state while checking session
   if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
-      </div>
-    );
+    return <LoginPageSkeleton />;
   }
 
   // Don't render login form if already authenticated
@@ -167,6 +198,11 @@ export default function LoginPage() {
             <CardDescription className="text-gray-500">
               Sign in to access the hospital management system
             </CardDescription>
+            <div className="mt-4 text-center text-sm">
+              <Link target="_blank" href="https://easpataal.vercel.app/" className="text-blue-600 hover:underline">
+                Go to Patient Portal
+              </Link>
+            </div>
           </CardHeader>
 
           <CardContent>

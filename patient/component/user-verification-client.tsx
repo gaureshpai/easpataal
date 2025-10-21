@@ -11,6 +11,7 @@ import {
 } from "@/component/ui/card";
 import { Input } from "@/component/ui/input";
 import { verifyUser } from "@/lib/serverFunctions";
+import { Loader2 } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 
@@ -153,7 +154,14 @@ export default function UserVerification() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Verifying..." : "Verify"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                "Verify"
+              )}
             </Button>
           </form>
         </CardContent>

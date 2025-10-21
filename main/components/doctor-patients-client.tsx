@@ -42,13 +42,54 @@ import {
   X,
 } from "lucide-react"
 import { Navbar } from "@/components/navbar"
-import PatientForm  from "@/components/patient-form"
+import PatientForm from "@/components/patient-form"
 import { useToast } from "@/hooks/use-toast";
 import { getDoctorPatientsAction } from "@/lib/doctor-actions";
 import { useSession } from "next-auth/react";
 import type { PatientData } from "@/lib/doctor-actions"
 import { getStatusColor } from "@/lib/functions"
 import { decactivatePatient } from "@/lib/patient-service"
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PatientCardSkeleton = () => (
+  <Card>
+    <CardHeader className="pb-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div>
+            <Skeleton className="h-5 w-32 mb-2" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        </div>
+        <Skeleton className="h-6 w-20" />
+      </div>
+    </CardHeader>
+    <CardContent className="space-y-3">
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <div>
+          <Skeleton className="h-4 w-24" />
+        </div>
+      </div>
+      <div>
+        <Skeleton className="h-4 w-28 mb-1" />
+        <Skeleton className="h-4 w-full" />
+      </div>
+      <div className="flex items-center text-sm text-gray-600">
+        <Skeleton className="h-3 w-3 mr-1" />
+        <Skeleton className="h-3 w-32" />
+      </div>
+      <div className="flex space-x-2 pt-2">
+        <Skeleton className="h-9 w-20" />
+        <Skeleton className="h-9 w-20" />
+        <Skeleton className="h-9 w-24" />
+      </div>
+    </CardContent>
+  </Card>
+);
 
 export default function DoctorPatientsPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -158,14 +199,10 @@ export default function DoctorPatientsPage() {
             </CardContent>
           </Card>
 
-          {(loading || patients.length === 0) ? (
-            <Card className="text-center py-12">
-              <CardContent>
-                <User className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Loading patients...</h3>
-                <p className="text-gray-500">Please wait while we fetch the patient data.</p>
-              </CardContent>
-            </Card>
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => <PatientCardSkeleton key={i} />)}
+            </div>
           ) : patients.length === 0 ? (
             <Card className="text-center py-12">
               <CardContent>

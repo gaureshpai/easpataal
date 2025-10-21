@@ -13,18 +13,154 @@ import {
   Activity,
 } from "lucide-react"
 import { PharmacyDashboardClientProps } from "@/lib/helpers"
+import { Skeleton } from "@/components/ui/skeleton";
+
+const StatCardSkeleton = () => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Skeleton className="h-4 w-32" />
+      <Skeleton className="h-4 w-4" />
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-8 w-16" />
+      <Skeleton className="h-3 w-24 mt-1" />
+    </CardContent>
+  </Card>
+);
+
+const TopMedicationsSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-5 w-5" />
+        <Skeleton className="h-5 w-32" />
+      </div>
+      <Skeleton className="h-4 w-48 mt-1" />
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Skeleton className="h-8 w-8 rounded-full" />
+            <div>
+              <Skeleton className="h-4 w-24 mb-1" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+          <Skeleton className="h-2 w-24" />
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+const TrendsSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-5 w-5" />
+        <Skeleton className="h-5 w-40" />
+      </div>
+      <Skeleton className="h-4 w-56 mt-1" />
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <Skeleton className="h-4 w-20" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-2 w-full" />
+          <div className="flex justify-between text-xs">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+const InventoryStatusSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-5 w-5" />
+        <Skeleton className="h-5 w-36" />
+      </div>
+      <Skeleton className="h-4 w-48 mt-1" />
+    </CardHeader>
+    <CardContent className="space-y-6">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+          <Skeleton className="h-2 w-full" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+const ActivitySkeleton = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex items-center space-x-2">
+        <Skeleton className="h-5 w-5" />
+        <Skeleton className="h-5 w-40" />
+      </div>
+      <Skeleton className="h-4 w-52 mt-1" />
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {[...Array(4)].map((_, i) => (
+        <div key={i} className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div>
+              <Skeleton className="h-4 w-32 mb-1" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-12" />
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
+
+export const PharmacyDashboardClientSkeleton = () => (
+  <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <StatCardSkeleton />
+      <StatCardSkeleton />
+      <StatCardSkeleton />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <TopMedicationsSkeleton />
+      <TrendsSkeleton />
+    </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <InventoryStatusSkeleton />
+      <ActivitySkeleton />
+    </div>
+  </div>
+);
 
 export default function PharmacyDashboardClient({
   statistics,
   topMedications,
   prescriptionTrends,
 }: PharmacyDashboardClientProps) {
-  
-  const totalStock = statistics.totalDrugs || 1 
+
+  const totalStock = statistics.totalDrugs || 1
   const availablePercentage = Math.round((statistics.availableStock / totalStock) * 100)
   const lowPercentage = Math.round((statistics.lowStockCount / totalStock) * 100)
   const criticalPercentage = Math.round((statistics.criticalStockCount / totalStock) * 100)
-  
+
   const formattedTrends = prescriptionTrends.map((trend) => ({
     ...trend,
     date: new Date(trend.date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),

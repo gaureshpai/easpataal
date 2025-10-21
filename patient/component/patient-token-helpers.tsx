@@ -6,9 +6,7 @@ import { Badge } from "./ui/badge";
 import { Textarea } from "./ui/textarea";
 import { Skeleton } from "./ui/skeleton";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { Smartphone } from "lucide-react";
-
-// ... (ProfileSelection component)
+import { Smartphone, Loader2 } from "lucide-react";
 
 export function TokenCardSkeleton() {
   return (
@@ -194,7 +192,7 @@ export function FeedbackForm({ onSubmit, onCancel, loading }: {
       <div>
         <Textarea
           value={feedbackText}
-          onChange={(e:any) => setFeedbackText(e.target.value)}
+          onChange={(e: any) => setFeedbackText(e.target.value)}
           placeholder="Share your feedback (optional)"
           rows={3}
         />
@@ -206,7 +204,14 @@ export function FeedbackForm({ onSubmit, onCancel, loading }: {
           variant="default"
           disabled={loading}
         >
-          {loading ? "Submitting..." : "Submit Feedback"}
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Submitting...
+            </>
+          ) : (
+            "Submit Feedback"
+          )}
         </Button>
         <Button
           onClick={onCancel}
@@ -322,13 +327,12 @@ export function ProfileSelection({ profiles, onSelectProfile, loading }: {
             ))}
           </div>
         ) : profiles.length === 0 ? (
-          
           <div className="flex flex-col items-center justify-center mt-20">
             <Card className="w-full max-w-md text-center p-6">
               <CardHeader className="p-0">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
-                      <Smartphone className="h-6 w-6 text-primary" />
-                  </div>
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-4">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                </div>
                 <CardTitle className="text-2xl font-bold text-gray-800">No Patient Profiles Found</CardTitle>
                 <CardDescription className="text-gray-600 pt-2">
                   It seems there are no patient profiles linked to this device.
